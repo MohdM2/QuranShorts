@@ -1,0 +1,86 @@
+[
+  {
+    "surahName": "Faatir",
+    "surahNumber": 35,
+    "fromAyah": 34,
+    "toAyah": 38,
+    "reciter": "Mishary Rashid Alafasy",
+    "recitationSrc": "media/recitations/yt_pUs2T5Ng4C4.mp4",
+    "recitationStartMs": 159600,
+    "fadeInSeconds": 2,
+    "fadeOutSeconds": 1,
+    "verses": [
+      {
+        "ayahNumber": 34,
+        "arabic": "وَقَالُوا۟ ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَذْهَبَ عَنَّا ٱلْحَزَنَ ۖ إِنَّ رَبَّنَا لَغَفُورٌۭ شَكُورٌ",
+        "translation": "And they will say, \"Praise to Allah, who has removed from us [all] sorrow. Indeed, our Lord is Forgiving and Appreciative -",
+        "fromMs": 0,
+        "toMs": 15028
+      },
+      {
+        "ayahNumber": 35,
+        "arabic": "ٱلَّذِىٓ أَحَلَّنَا دَارَ ٱلْمُقَامَةِ مِن فَضْلِهِۦ لَا يَمَسُّنَا فِيهَا نَصَبٌۭ وَلَا يَمَسُّنَا فِيهَا لُغُوبٌۭ",
+        "translation": "He who has settled us in the home of duration out of His bounty. There touches us not in it any fatigue, and there touches us not in it weariness [of mind].\"",
+        "fromMs": 15028,
+        "toMs": 32367
+      },
+      {
+        "ayahNumber": 36,
+        "arabic": "وَٱلَّذِينَ كَفَرُوا۟ لَهُمْ نَارُ جَهَنَّمَ لَا يُقْضَىٰ عَلَيْهِمْ فَيَمُوتُوا۟ وَلَا يُخَفَّفُ عَنْهُم مِّنْ عَذَابِهَا ۚ كَذَٰلِكَ نَجْزِى كُلَّ كَفُورٍۢ",
+        "translation": "And for those who disbelieve will be the fire of Hell. [Death] is not decreed for them so they may die, nor will its torment be lightened for them. Thus do we recompense every ungrateful one.",
+        "fromMs": 32367,
+        "toMs": 58012
+      },
+      {
+        "ayahNumber": 37,
+        "arabic": "وَهُمْ يَصْطَرِخُونَ فِيهَا رَبَّنَآ أَخْرِجْنَا نَعْمَلْ صَٰلِحًا غَيْرَ ٱلَّذِى كُنَّا نَعْمَلُ ۚ أَوَلَمْ نُعَمِّرْكُم مَّا يَتَذَكَّرُ فِيهِ مَن تَذَكَّرَ وَجَآءَكُمُ ٱلنَّذِيرُ ۖ فَذُوقُوا۟ فَمَا لِلظَّٰلِمِينَ مِن نَّصِيرٍ",
+        "translation": "And they will cry out therein, \"Our Lord, remove us; we will do righteousness - other than what we were doing!\" But did We not grant you life enough for whoever would remember therein to remember, and the warner had come to you? So taste [the punishment], for there is not for the wrongdoers any helper.",
+        "fromMs": 58012,
+        "toMs": 95220
+      },
+      {
+        "ayahNumber": 38,
+        "arabic": "إِنَّ ٱللَّهَ عَٰلِمُ غَيْبِ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضِ ۚ إِنَّهُۥ عَلِيمٌۢ بِذَاتِ ٱلصُّدُورِ",
+        "translation": "Indeed, Allah is Knower of the unseen [aspects] of the heavens and earth. Indeed, He is Knowing of that within the breasts.",
+        "fromMs": 95220,
+        "toMs": 115139
+      }
+    ],
+    "arabicFont": "scheherazade",
+    "englishFont": "cormorant",
+    "arabicFontSize": 64,
+    "englishFontSize": 26,
+    "backgroundSrc": "media/baked/baked_035_034-038.mp4",
+    "backgroundBaked": true,
+    "bgMode": "collage",
+    "bgSource": "bg3.mp4",
+    "bgCollage": [
+      "pexels_36600222.mp4",
+      "pexels_34288837.mp4",
+      "pexels_34912709.mp4",
+      "pexels_36236782.mp4",
+      "pexels_17130809.mp4"
+    ],
+    "bgBlur": 1.5,
+    "bgDarken": 0.5,
+    "bgSaturation": 0.7,
+    "bgFadeInSeconds": 1,
+    "bgFadeOutSeconds": 1,
+    "bgFit": "natural",
+    "bgLoopStyle": "boomerang",
+    "useVideoAsBackground": false,
+    "breathSrc": "media/breaths/breath.mp3",
+    "hookText": "Take a breath",
+    "hookSubText": "and listen",
+    "hookTextAr": "خُذ نَفَسًا",
+    "hookSubTextAr": "وَأنصِت",
+    "breathColor": "#8fb39b",
+    "breathInEndSeconds": 3.53,
+    "breathStartDelaySeconds": 0.5,
+    "hookDurationInSeconds": 6.5,
+    "showProgressBar": true,
+    "showTimerRing": true,
+    "tailPaddingInSeconds": 1.5,
+    "accent": "#8fb39b"
+  }
+]

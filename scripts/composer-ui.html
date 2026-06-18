@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ayah Composer — Quran Shorts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<!-- Curated Quran-suitable faces for the Typography step preview. -->
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Noto+Naskh+Arabic:wght@400;500&family=Lateef:wght@400;500&family=Markazi+Text:wght@400;500;600&family=Aref+Ruqaa:wght@400;700&family=EB+Garamond:wght@400;500&family=Gentium+Book+Plus:wght@400;700&family=Crimson+Pro:wght@300;400;600&family=Lora:wght@400;500&family=Marcellus&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0f; --bg2: #0f0f17; --surface: #14141d; --surface2: #1b1b27;
+    --line: rgba(240,236,226,0.09); --line-strong: rgba(240,236,226,0.16);
+    --gold: #d4a853; --gold-soft: #c9a227; --gold-deep: #b8860b;
+    --glow: rgba(212,168,83,0.18);
+    --text: #f0ece2; --muted: rgba(240,236,226,0.62); --dim: rgba(240,236,226,0.34);
+    --ok: #7fb069; --warn: #d98c5f;
+    --serif: "Cormorant Garamond", serif; --arabic: "Scheherazade New", serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--serif); font-size: 16px;
+    -webkit-font-smoothing: antialiased; overflow: hidden; position: relative;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(120% 80% at 30% -10%, rgba(212,168,83,0.10), transparent 55%),
+      radial-gradient(90% 70% at 100% 110%, rgba(184,134,11,0.08), transparent 60%),
+      linear-gradient(180deg, var(--bg2), var(--bg));
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  #app { position: relative; z-index: 2; height: 100vh; display: flex; flex-direction: column; }
+
+  /* header + project bar */
+  header {
+    display: flex; align-items: center; gap: 22px; padding: 14px 28px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(20,20,29,0.7), transparent); backdrop-filter: blur(6px);
+  }
+  .brand { display: flex; flex-direction: column; line-height: 1; }
+  .brand .ar { font-family: var(--arabic); font-size: 24px; color: var(--gold); letter-spacing: .5px; }
+  .brand .en { font-family: var(--serif); font-size: 12px; letter-spacing: .42em; text-transform: uppercase; color: var(--dim); margin-top: 6px; }
+  .proj { display: flex; align-items: center; gap: 8px; margin-left: 8px;
+    padding: 6px 8px 6px 12px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); }
+  .proj .lab { font-family: var(--mono); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }
+  .proj select { border: none; background: transparent; min-width: 130px; }
+  .icon-btn { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 13px; }
+  .header-right { margin-left: auto; }
+
+  select, input[type="number"], input[type="text"] {
+    background: var(--surface); color: var(--text); border: 1px solid var(--line-strong);
+    border-radius: 9px; padding: 8px 11px; font-family: var(--mono); font-size: 13px; outline: none;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  select:focus, input:focus { border-color: var(--gold-soft); box-shadow: 0 0 0 3px var(--glow); }
+  input[type="number"] { width: 70px; text-align: center; }
+
+  button {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .04em; color: var(--text);
+    background: var(--surface2); border: 1px solid var(--line-strong); border-radius: 9px;
+    padding: 9px 14px; cursor: pointer; transition: all .16s ease; user-select: none;
+  }
+  button:hover { border-color: var(--gold-soft); color: #fff; }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-gold { background: linear-gradient(180deg, var(--gold), var(--gold-deep)); color: #1a1408; border: none; font-weight: 700; box-shadow: 0 6px 22px -8px var(--gold); }
+  .btn-gold:hover { color: #1a1408; filter: brightness(1.07); }
+  .btn-ghost { background: transparent; }
+
+  /* step rail */
+  .rail { display: flex; align-items: center; gap: 6px; padding: 12px 28px; border-bottom: 1px solid var(--line); }
+  .step-tab {
+    display: flex; align-items: center; gap: 9px; padding: 8px 16px; border-radius: 999px;
+    background: transparent; border: 1px solid transparent; cursor: pointer; color: var(--dim);
+    font-family: var(--mono); font-size: 12px; letter-spacing: .04em; transition: all .18s;
+  }
+  .step-tab .num {
+    width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; border: 1px solid var(--line-strong); color: var(--muted);
+  }
+  .step-tab:hover { color: var(--muted); }
+  .step-tab.on { color: var(--text); border-color: var(--line-strong); background: linear-gradient(180deg, rgba(212,168,83,.12), transparent); }
+  .step-tab.on .num { background: linear-gradient(180deg, var(--gold), var(--gold-deep)); color: #1a1408; border: none; font-weight: 700; }
+  .step-tab.done .num { border-color: var(--gold-soft); color: var(--gold); }
+  .rail-sep { flex: 1 1 6px; height: 1px; background: var(--line); min-width: 8px; max-width: 34px; }
+
+  main { flex: 1; display: grid; grid-template-columns: 1fr 432px; gap: 1px; min-height: 0; background: var(--line); }
+  .stage-col, .panel-col { background: var(--bg); min-height: 0; }
+  /* Marking is the only step with the live marker editor (video + transport).
+     Every other step drops the stage and expands the panel to full width. */
+  main.solo { grid-template-columns: 1fr; }
+  main.solo .stage-col { display: none; }
+  main.solo .panel-col { padding: 0 24px; }
+  main.solo .panel-head { padding: 16px 0 12px; }
+  main.solo .panel-body { padding: 26px 0 40px; }
+  main.solo .panel-head, main.solo .step-panel { max-width: 880px; margin-left: auto; margin-right: auto; width: 100%; }
+  main.solo .breath-body { grid-template-columns: 220px minmax(0, 1fr); gap: 26px; }
+  main.solo .breath-ring { width: 104px; height: 104px; }
+  main.solo .bg-preview { max-height: 320px; }
+
+  /* stage */
+  .stage-col { display: flex; flex-direction: column; padding: 22px 26px; gap: 16px; }
+  .screen {
+    flex: 1; min-height: 0; position: relative; border-radius: 16px; overflow: hidden; background: #000;
+    border: 1px solid var(--line-strong); display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 120px rgba(0,0,0,.6), 0 30px 60px -30px #000;
+  }
+  video { max-width: 100%; max-height: 100%; display: block; }
+  .screen .placeholder { color: var(--dim); font-size: 18px; font-style: italic; text-align: center; padding: 0 40px; }
+  .transport { display: flex; flex-direction: column; gap: 12px; }
+  .tc-row { display: flex; align-items: baseline; gap: 16px; }
+  .tc { font-family: var(--mono); font-weight: 500; font-size: 36px; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
+  .tc .ms { color: var(--gold); }
+  .tc-frame { font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: .1em; }
+  .tc-frame b { color: var(--muted); font-weight: 500; }
+  .dur { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .timeline { position: relative; height: 44px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line-strong); cursor: pointer; overflow: hidden; }
+  .tl-played { position: absolute; top: 0; bottom: 0; left: 0; background: linear-gradient(90deg, rgba(212,168,83,.10), rgba(212,168,83,.16)); }
+  .tl-playhead { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--text); box-shadow: 0 0 10px rgba(240,236,226,.7); }
+  .tl-tick { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--gold); opacity: .85; }
+  .tl-tick.sel { background: #fff; box-shadow: 0 0 8px #fff; }
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .mark-btn { padding: 12px 24px; font-size: 14px; font-weight: 700; letter-spacing: .06em; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; color: var(--dim); font-family: var(--mono); font-size: 11px; }
+  .legend b { color: var(--muted); font-weight: 500; }
+
+  /* panel */
+  .panel-col { display: flex; flex-direction: column; }
+  .panel-head { padding: 16px 22px 12px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .panel-head h2 { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+  .panel-head .hint { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .panel-head .hint b { color: var(--gold); }
+  .panel-body { flex: 1; overflow-y: auto; padding: 18px 22px; }
+  .panel-body::-webkit-scrollbar, .verses::-webkit-scrollbar { width: 8px; }
+  .panel-body::-webkit-scrollbar-thumb, .verses::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+  .step-panel { display: none; flex-direction: column; gap: 18px; }
+  .step-panel.on { display: flex; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label, .sec-lab { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }
+  .row { display: flex; gap: 10px; align-items: flex-end; }
+  .row .field { flex: 1; }
+  .divider { display: flex; align-items: center; gap: 12px; color: var(--dim); font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .note { font-family: var(--serif); font-style: italic; font-size: 13.5px; color: var(--dim); line-height: 1.45; }
+  .group { border: 1px solid var(--line); border-radius: 13px; padding: 15px; display: flex; flex-direction: column; gap: 13px; background: linear-gradient(180deg, var(--surface), rgba(20,20,29,.35)); }
+  .group > .sec-lab:first-child { margin-bottom: -2px; }
+
+  /* verses */
+  .verses { display: flex; flex-direction: column; gap: 8px; }
+  .verse { border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; background: linear-gradient(180deg, var(--surface), rgba(20,20,29,.4)); transition: border-color .16s, box-shadow .16s; cursor: pointer; }
+  .verse.next { border-color: var(--gold-soft); box-shadow: 0 0 0 1px var(--gold-soft), 0 0 22px -6px var(--glow); }
+  .verse .top { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .vnum { font-family: var(--mono); font-size: 11px; color: var(--gold); border: 1px solid var(--line-strong); border-radius: 6px; padding: 2px 8px; }
+  .vstate { margin-left: auto; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  .verse.next .vstate { color: var(--gold); }
+  .arabic { font-family: var(--arabic); font-size: 28px; line-height: 1.85; direction: rtl; text-align: right; color: var(--text); margin-bottom: 5px; }
+  .trans { font-family: var(--serif); font-size: 14px; font-style: italic; color: var(--muted); line-height: 1.4; }
+  .times { display: flex; gap: 8px; margin-top: 9px; }
+  .chip { flex: 1; display: flex; flex-direction: column; gap: 3px; align-items: center; font-family: var(--mono); font-size: 12px; padding: 6px 4px; border-radius: 8px; border: 1px dashed var(--line-strong); color: var(--dim); transition: all .15s; }
+  .chip .t { color: var(--text); font-weight: 500; }
+  .chip .lab { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; }
+  .chip.set { border-style: solid; } .chip.set .lab { color: var(--gold); }
+  .chip.sel { border-color: #fff; box-shadow: 0 0 0 1px #fff; }
+  .chip.empty .t { color: var(--dim); }
+
+  /* fades */
+  .fade-ctl { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .fade-seg { display: flex; align-items: center; gap: 6px; }
+  .fade-ico { color: var(--gold); font-size: 13px; }
+  .fade-ctl input[type="number"] { width: 56px; padding: 6px; }
+
+  /* sliders */
+  input[type="range"] { -webkit-appearance: none; appearance: none; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--gold-soft), var(--line-strong)); outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f4e3b8, var(--gold) 60%, var(--gold-deep)); border: none; cursor: pointer; box-shadow: 0 2px 8px -1px var(--gold), 0 0 0 1px rgba(0,0,0,.3); }
+  .grade-row { display: grid; grid-template-columns: 56px 1fr 54px; align-items: center; gap: 12px; }
+  .grade-row label { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .grade-row output { font-family: var(--mono); font-size: 12px; color: var(--gold); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* segmented control */
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 9px; overflow: hidden; }
+  .seg-btn { font-family: var(--mono); font-size: 11px; padding: 8px 14px; border: none; border-radius: 0; background: var(--surface); color: var(--muted); border-left: 1px solid var(--line); cursor: pointer; transition: background .15s, color .15s; }
+  .seg-btn:first-child { border-left: none; }
+  .seg-btn:hover { color: var(--text); background: var(--surface2); }
+  .seg-btn.on { background: linear-gradient(180deg, rgba(212,168,83,.22), rgba(212,168,83,.10)); color: #fff; }
+  .loop-row { display: flex; align-items: center; gap: 10px; }
+  .loop-row[hidden] { display: none; }
+
+  /* background gallery */
+  .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 9px; }
+  .bg-card { position: relative; border-radius: 11px; overflow: hidden; cursor: pointer; border: 1px solid var(--line); background: #000; aspect-ratio: 9/16; transition: border-color .16s, transform .16s; }
+  .bg-card:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+  .bg-card video { width: 100%; height: 100%; object-fit: cover; filter: saturate(.85) brightness(.8); }
+  .bg-card .tag { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 7px; font-family: var(--mono); font-size: 9px; color: var(--text); background: linear-gradient(0deg, rgba(0,0,0,.85), transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bg-card .check { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 11px; background: var(--gold); color: #1a1408; font-weight: 700; }
+  .bg-card.sel { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 22px -6px var(--glow); }
+  .bg-card.sel .check { display: flex; }
+  .bg-card.sel video { filter: saturate(1) brightness(.95); }
+  .bg-preview { aspect-ratio: 9/16; max-height: 230px; border-radius: 12px; overflow: hidden; background: #000; border: 1px solid var(--line-strong); margin: 0 auto; }
+  .bg-preview video { width: 100%; height: 100%; object-fit: cover; }
+
+  /* collage */
+  .collage-grid { display: flex; flex-direction: column; gap: 9px; }
+  .col-card { display: grid; grid-template-columns: 52px 1fr auto; gap: 11px; align-items: center; border: 1px solid var(--line); border-radius: 11px; padding: 9px; background: var(--surface); }
+  .col-thumb { width: 52px; height: 84px; border-radius: 7px; overflow: hidden; background: #000; border: 1px solid var(--line-strong); }
+  .col-thumb video { width: 100%; height: 100%; object-fit: cover; filter: saturate(.85) brightness(.8); }
+  .col-meta { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .col-meta .vnum { align-self: flex-start; }
+  .col-meta select { width: 100%; }
+  .col-dice { width: 36px; height: 36px; padding: 0; font-size: 15px; }
+  .col-fit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: var(--mono); font-size: 10.5px; letter-spacing: .02em; color: var(--muted); }
+  .col-fit .m b { color: var(--text); font-weight: 500; }
+  .col-fit .m i { font-style: normal; color: var(--dim); }
+  .col-fit .badge { padding: 2px 8px; border-radius: 6px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; border: 1px solid var(--line-strong); color: var(--muted); white-space: nowrap; }
+  .col-fit.stretch .badge { color: var(--gold); border-color: rgba(212,168,83,.45); background: rgba(212,168,83,.08); }
+  .col-fit.trim .badge { color: var(--warn); border-color: rgba(217,140,95,.45); background: rgba(217,140,95,.08); }
+  .col-fit.fit .badge { color: var(--ok); border-color: rgba(127,176,105,.45); background: rgba(127,176,105,.08); }
+  .col-thumb { cursor: zoom-in; position: relative; }
+  .col-thumb::after { content: "⤢"; position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 5px; color: var(--text); background: rgba(0,0,0,.55); opacity: 0; transition: opacity .15s; }
+  .col-thumb:hover::after { opacity: 1; }
+
+  /* lightbox */
+  .lightbox { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(6,6,10,.84); backdrop-filter: blur(5px); cursor: zoom-out; animation: fade .2s ease; }
+  .lightbox.on { display: flex; }
+  .lb-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .lb-inner video { max-height: 78vh; max-width: 44vh; aspect-ratio: 9/16; object-fit: cover; border-radius: 16px; border: 1px solid var(--line-strong); background: #000; box-shadow: 0 50px 90px -30px #000, inset 0 0 120px rgba(0,0,0,.5); }
+  .lb-cap { font-family: var(--mono); font-size: 12.5px; color: var(--text); letter-spacing: .03em; }
+  .lb-cap b { color: var(--gold); font-weight: 500; }
+  .lb-hint { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+
+  /* bg toolbar + pexels modal */
+  .bg-toolbar { display: flex; align-items: center; gap: 12px; }
+  .pexels { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(6,6,10,.84); backdrop-filter: blur(5px); animation: fade .2s ease; }
+  .pexels.on { display: flex; }
+  .px-panel { width: min(960px, 92vw); height: min(84vh, 820px); display: flex; flex-direction: column; background: linear-gradient(180deg, var(--surface2), var(--surface)); border: 1px solid var(--line-strong); border-radius: 18px; box-shadow: 0 50px 100px -30px #000; overflow: hidden; }
+  .px-head { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .px-title { font-family: var(--serif); font-size: 22px; font-weight: 500; }
+  .px-title .px-sub { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-left: 6px; }
+  .px-filters { display: flex; gap: 6px; }
+  .px-filters span { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(212,168,83,.4); background: rgba(212,168,83,.08); border-radius: 999px; padding: 3px 9px; }
+  .px-head .icon-btn { margin-left: auto; }
+  .px-search { display: flex; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .px-search input { flex: 1; font-size: 14px; }
+  .px-grid { flex: 1; overflow-y: auto; padding: 18px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 12px; align-content: start; }
+  .px-grid::-webkit-scrollbar { width: 8px; } .px-grid::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+  .px-empty { grid-column: 1/-1; color: var(--dim); font-family: var(--serif); font-style: italic; font-size: 15px; text-align: center; padding: 40px 0; }
+  .px-card { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 9/16; background: #000; border: 1px solid var(--line); cursor: pointer; transition: border-color .15s, transform .15s; }
+  .px-card:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+  .px-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: .9; }
+  .px-card .px-dur { position: absolute; top: 6px; left: 6px; font-family: var(--mono); font-size: 9px; color: var(--text); background: rgba(0,0,0,.6); border-radius: 5px; padding: 2px 6px; }
+  .px-card .px-by { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 7px 6px; font-family: var(--mono); font-size: 9px; color: rgba(240,236,226,.8); background: linear-gradient(0deg, rgba(0,0,0,.85), transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .px-card .px-check { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.35); color: transparent; transition: all .14s; }
+  .px-card.sel { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 24px -8px var(--glow); }
+  .px-card.sel img { opacity: 1; }
+  .px-card.sel .px-check { background: var(--gold); border-color: var(--gold); color: #1a1408; }
+  .px-card.have { outline: 1px dashed rgba(127,176,105,.5); }
+  .px-card.have::after { content: "in library"; position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); text-align: center; font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ok); }
+  .px-foot { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid var(--line); }
+  .px-status { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .px-status.err { color: var(--warn); } .px-status.ok { color: var(--ok); }
+  .px-foot #pxDownload { margin-left: auto; }
+
+  /* breath */
+  .breath-body { display: grid; grid-template-columns: 120px 1fr; gap: 16px; }
+  .breath-prev { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 9/15; border-radius: 12px; background: radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.04), transparent 58%), #000; border: 1px solid var(--line-strong); box-shadow: inset 0 0 50px rgba(0,0,0,.72); overflow: hidden; }
+  .breath-ring { position: relative; width: 78px; height: 78px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.28); overflow: hidden; margin-bottom: 28px; }
+  .breath-fill { position: absolute; bottom: 0; left: 0; right: 0; height: 0%; opacity: .92; }
+  .breath-listen { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-transform: uppercase; opacity: 0; }
+  .breath-ctl { display: flex; flex-direction: column; gap: 14px; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .sw { width: 26px; height: 26px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,.14); transition: transform .12s, box-shadow .12s; }
+  .sw:hover { transform: translateY(-1px); }
+  .sw.sel { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px #fff; }
+  .sw-custom { width: 26px; height: 26px; padding: 0; border-radius: 8px; }
+  .breath-track { position: relative; height: 34px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line-strong); cursor: pointer; overflow: hidden; }
+  .breath-inhale { position: absolute; top: 0; bottom: 0; left: 0; width: 60%; }
+  .breath-split-handle { position: absolute; top: -2px; bottom: -2px; width: 3px; left: 60%; background: #fff; box-shadow: 0 0 8px #fff; transform: translateX(-1px); cursor: ew-resize; z-index: 2; }
+  .breath-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--gold); opacity: .9; z-index: 1; }
+  .breath-track-labels { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  .swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line-strong); padding: 0; cursor: pointer; }
+
+  /* typography */
+  .type-stage { position: relative; border-radius: 16px; overflow: hidden; min-height: 230px; display: flex; align-items: center; justify-content: center; padding: 38px 0; border: 1px solid var(--line-strong); background: radial-gradient(130% 90% at 50% 0%, rgba(212,168,83,.05), transparent 60%), radial-gradient(100% 70% at 50% 120%, rgba(184,134,11,.05), transparent 60%), #06060b; box-shadow: inset 0 0 130px rgba(0,0,0,.7); }
+  .type-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(6,6,11,.9), transparent 22%, transparent 78%, rgba(6,6,11,.9)); }
+  .type-stage-inner { position: relative; z-index: 1; width: 83.33%; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .type-ar { direction: rtl; line-height: 1.85; color: var(--text); text-shadow: 0 2px 20px rgba(0,0,0,.55); font-weight: 400; }
+  .type-div { height: 1.5px; width: 60px; margin: 22px 0; border-radius: 2px; }
+  .type-en { line-height: 1.7; color: rgba(240,236,226,.82); font-weight: 300; letter-spacing: .01em; max-width: 90%; }
+
+  .type-head { display: flex; align-items: center; gap: 14px; }
+  .type-size { margin-left: auto; display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  .type-size input[type="range"] { width: 150px; }
+  .type-size output { color: var(--gold); min-width: 48px; text-align: right; letter-spacing: 0; text-transform: none; font-size: 12px; }
+
+  .font-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+  .font-card { border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; background: linear-gradient(180deg, var(--surface), rgba(20,20,29,.4)); cursor: pointer; transition: border-color .16s, transform .16s, box-shadow .16s; display: flex; flex-direction: column; gap: 9px; }
+  .font-card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .font-card.sel { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 24px -8px var(--glow); background: linear-gradient(180deg, rgba(212,168,83,.08), rgba(20,20,29,.4)); }
+  .font-card .fc-sample { color: var(--text); line-height: 1.35; min-height: 38px; display: flex; align-items: center; }
+  .font-card .fc-sample.ar { direction: rtl; font-size: 30px; justify-content: flex-end; }
+  .font-card .fc-sample.en { font-size: 22px; }
+  .font-card .fc-meta { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .font-card .fc-name { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .03em; }
+  .font-card.sel .fc-name { color: var(--gold); }
+  .font-card .fc-note { font-family: var(--serif); font-style: italic; font-size: 12.5px; color: var(--dim); }
+
+  /* review */
+  .summary { display: flex; flex-direction: column; gap: 9px; }
+  .sum-row { display: flex; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 12px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+  .sum-row .k { color: var(--dim); letter-spacing: .08em; text-transform: uppercase; font-size: 10px; }
+  .sum-row .v { color: var(--text); text-align: right; }
+  .toggle { display: flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--muted); cursor: pointer; user-select: none; }
+  .toggle input { appearance: none; width: 38px; height: 20px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--line-strong); position: relative; cursor: pointer; transition: background .18s; }
+  .toggle input::after { content: ""; position: absolute; top: 1px; left: 1px; width: 16px; height: 16px; border-radius: 50%; background: var(--dim); transition: all .18s; }
+  .toggle input:checked { background: rgba(212,168,83,.25); border-color: var(--gold-soft); }
+  .toggle input:checked::after { left: 19px; background: var(--gold); }
+
+  /* footer nav */
+  footer { display: flex; align-items: center; gap: 16px; padding: 13px 28px; border-top: 1px solid var(--line); background: linear-gradient(0deg, rgba(20,20,29,.7), transparent); }
+  .status { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .status.ok { color: var(--ok); } .status.err { color: var(--warn); }
+  .nav-right { margin-left: auto; display: flex; gap: 10px; }
+
+  .reveal { opacity: 0; transform: translateY(10px); animation: rise .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="reveal">
+    <div class="brand"><span class="ar">مُؤلِّف الآيات</span><span class="en">Ayah Composer</span></div>
+    <div class="proj">
+      <span class="lab">Project</span>
+      <select id="projSel"></select>
+      <button id="projNew" class="icon-btn btn-ghost" title="New project">＋</button>
+      <button id="projRename" class="icon-btn btn-ghost" title="Rename project">✎</button>
+      <button id="projDelete" class="icon-btn btn-ghost" title="Delete project">🗑</button>
+    </div>
+    <span class="header-right status" id="topStatus">Ready.</span>
+  </header>
+
+  <nav class="rail reveal" style="animation-delay:.05s" id="rail">
+    <button class="step-tab on" data-step="source"><span class="num">1</span> Source</button>
+    <span class="rail-sep"></span>
+    <button class="step-tab" data-step="mark"><span class="num">2</span> Mark</button>
+    <span class="rail-sep"></span>
+    <button class="step-tab" data-step="type"><span class="num">3</span> Type</button>
+    <span class="rail-sep"></span>
+    <button class="step-tab" data-step="breath"><span class="num">4</span> Breath</button>
+    <span class="rail-sep"></span>
+    <button class="step-tab" data-step="bg"><span class="num">5</span> Background</button>
+    <span class="rail-sep"></span>
+    <button class="step-tab" data-step="review"><span class="num">6</span> Review</button>
+  </nav>
+
+  <main>
+    <section class="stage-col reveal" style="animation-delay:.1s">
+      <div class="screen" id="screen">
+        <div class="placeholder" id="ph">Pick a recitation source and load a verse range to begin.<br/><span style="font-size:13px;color:var(--dim)">Drop files into <code>public/media/recitations/</code>.</span></div>
+        <video id="video" style="display:none" preload="auto"></video>
+      </div>
+      <div class="transport">
+        <div class="tc-row">
+          <div class="tc" id="tc">00:00<span class="ms">.000</span></div>
+          <div class="tc-frame">frame <b id="frame">0</b> @30fps</div>
+          <div class="dur" id="dur">—</div>
+        </div>
+        <div class="timeline" id="timeline">
+          <div class="tl-played" id="tlPlayed"></div>
+          <div class="tl-playhead" id="tlHead" style="left:0"></div>
+        </div>
+        <div class="controls">
+          <button id="playBtn" title="Play / Pause (Space)">► Play</button>
+          <button id="homeBtn" class="btn-ghost" title="Start (Home)">⏮</button>
+          <button id="stepB" class="btn-ghost" title="−1 frame">◀ 1f</button>
+          <button id="stepF" class="btn-ghost" title="+1 frame">1f ▶</button>
+          <button id="markBtn" class="btn-gold mark-btn" title="Add marker (Ctrl+Space)">◆ Add marker</button>
+          <button id="updateBtn" title="Set selected boundary to playhead (U)" disabled>Update sel.</button>
+          <button id="clearBtn" class="btn-ghost" title="Clear selected (Backspace)" disabled>Clear sel.</button>
+        </div>
+        <div class="legend">
+          <span><b>Space</b> play/pause</span><span><b>Ctrl+Space</b> mark</span>
+          <span><b>← →</b> ±1s</span><span><b>U</b> update</span><span><b>click verse</b> seek</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-col reveal" style="animation-delay:.16s">
+      <div class="panel-head">
+        <h2 id="panelTitle">Source</h2>
+        <span class="hint" id="panelHint"></span>
+      </div>
+      <div class="panel-body">
+
+        <!-- STEP 1: SOURCE -->
+        <div class="step-panel on" data-panel="source">
+          <div class="field">
+            <label>YouTube URL</label>
+            <div class="row">
+              <input id="ytUrl" type="text" placeholder="https://www.youtube.com/watch?v=…" style="flex:1" />
+              <button id="ytBtn">⬇ Fetch</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Recitation source</label>
+            <select id="videoSel"><option value="">—</option></select>
+          </div>
+          <div class="row">
+            <div class="field"><label>Surah</label><select id="surah"></select></div>
+            <div class="field" style="flex:0 0 auto"><label>From</label><select id="from"></select></div>
+            <div class="field" style="flex:0 0 auto"><label>To</label><select id="to"></select></div>
+          </div>
+          <button id="loadBtn" class="btn-gold">Load verses</button>
+          <div class="divider">or</div>
+          <div class="field">
+            <label>Open a saved video in this project</label>
+            <select id="propsSel"><option value="">— new —</option></select>
+          </div>
+        </div>
+
+        <!-- STEP 2: MARK -->
+        <div class="step-panel" data-panel="mark">
+          <div class="note">Play in the stage and tap <b>Space</b>… actually <b>Ctrl+Space</b> (or ◆ Add marker) at each verse start, then once more at the end of the last verse. Fine-tune with <b>← →</b> and <b>U</b>.</div>
+          <div class="group">
+            <span class="sec-lab">Voice fade</span>
+            <div class="fade-ctl">
+              <span class="fade-seg"><span class="fade-ico">↗</span> in <input type="number" id="fadeIn" min="0" max="10" step="0.1" value="2" /> s</span>
+              <span class="fade-seg"><span class="fade-ico">↘</span> out <input type="number" id="fadeOut" min="0" max="10" step="0.1" value="1" /> s</span>
+            </div>
+          </div>
+          <div class="verses" id="verses"></div>
+        </div>
+
+        <!-- STEP 3: TYPOGRAPHY -->
+        <div class="step-panel" data-panel="type">
+          <div class="note">Choose the calligraphic face and size for the Arabic verse and its translation. The preview mirrors the rendered frame, including your accent divider.</div>
+          <div class="type-stage">
+            <div class="type-stage-inner" id="typeStageInner">
+              <div class="type-ar" id="typeAr"></div>
+              <div class="type-div" id="typeDiv"></div>
+              <div class="type-en" id="typeEn"></div>
+            </div>
+          </div>
+          <div class="group">
+            <div class="type-head">
+              <span class="sec-lab">Arabic face</span>
+              <span class="type-size">size <input type="range" id="arFontSize" min="44" max="104" step="1" value="64" /><output id="arSizeOut">64 px</output></span>
+            </div>
+            <div class="font-grid" id="arFontGrid"></div>
+          </div>
+          <div class="group">
+            <div class="type-head">
+              <span class="sec-lab">Translation face</span>
+              <span class="type-size">size <input type="range" id="enFontSize" min="16" max="40" step="1" value="26" /><output id="enSizeOut">26 px</output></span>
+            </div>
+            <div class="font-grid" id="enFontGrid"></div>
+          </div>
+          <div class="group">
+            <div class="type-head">
+              <span class="sec-lab">Safe area · platform UI</span>
+              <span class="note" style="margin:0">px kept clear of the Reels / TikTok overlay</span>
+            </div>
+            <div class="row" style="gap:14px;flex-wrap:wrap">
+              <label class="field" style="flex:1;min-width:84px;flex-direction:row;align-items:center;gap:6px">top <input type="number" id="safeTop" min="0" max="600" step="2" value="130" /></label>
+              <label class="field" style="flex:1;min-width:84px;flex-direction:row;align-items:center;gap:6px">right <input type="number" id="safeRight" min="0" max="600" step="2" value="150" /></label>
+              <label class="field" style="flex:1;min-width:84px;flex-direction:row;align-items:center;gap:6px">bottom <input type="number" id="safeBottom" min="0" max="800" step="2" value="340" /></label>
+              <label class="field" style="flex:1;min-width:84px;flex-direction:row;align-items:center;gap:6px">left <input type="number" id="safeLeft" min="0" max="600" step="2" value="48" /></label>
+            </div>
+            <div class="note" style="margin-top:6px">Text centers using the larger of left/right, so it stays clear of the action rail while remaining centered. The timer ring sits at top + left. Set all to 0 for a full-bleed (non-overlay) export.</div>
+          </div>
+        </div>
+
+        <!-- STEP 4: BREATH -->
+        <div class="step-panel" data-panel="breath">
+          <div class="note">The circle fills as you inhale, empties as you exhale; “listen” appears on the exhale. This color is also the video accent (progress bar, ring, verse highlights).</div>
+          <div class="breath-body">
+            <div class="breath-prev">
+              <div class="breath-ring" id="breathRing"><div class="breath-fill" id="breathFill"></div></div>
+              <div class="breath-listen" id="breathListen">listen</div>
+            </div>
+            <div class="breath-ctl">
+              <div class="field">
+                <label>Calm palette</label>
+                <div class="swatches" id="breathSwatches"><input type="color" id="breathColor" class="sw-custom swatch" value="#6fb3a8" title="Custom color" /></div>
+              </div>
+              <div class="field">
+                <label>Inhale → exhale split <output id="breathSplitOut" style="float:right;color:var(--gold)">1.8s</output></label>
+                <div class="breath-track" id="breathTrack">
+                  <div class="breath-inhale" id="breathInhale"></div>
+                  <div class="breath-playhead" id="breathPlayhead" hidden></div>
+                  <div class="breath-split-handle" id="breathHandle"></div>
+                </div>
+                <div class="breath-track-labels"><span id="inhaleLab">inhale</span><span id="exhaleLab">exhale</span></div>
+              </div>
+              <div class="row">
+                <button id="breathPlay" class="btn-ghost">▶ Hear breath</button>
+                <button id="breathSetSplit" class="btn-ghost">◆ Split @ playhead</button>
+              </div>
+              <div class="field" style="flex-direction:row;align-items:center;gap:10px">
+                <label style="white-space:nowrap">Start delay</label>
+                <input type="number" id="breathDelay" min="0" max="3" step="0.1" value="0.5" />
+                <span class="note" style="margin:0">s before the circle fills</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: BACKGROUND -->
+        <div class="step-panel" data-panel="bg">
+          <div class="bg-toolbar">
+            <span class="note" style="margin:0">Clips load from <code>public/media/backgrounds/</code>.</span>
+            <button id="pxOpen" class="btn-ghost" style="margin-left:auto">⬇ Download more from Pexels</button>
+          </div>
+          <div class="field">
+            <label>Background mode</label>
+            <div class="seg" id="bgModeSeg">
+              <button type="button" class="seg-btn on" data-mode="single">Single clip</button>
+              <button type="button" class="seg-btn" data-mode="collage">Collage (per verse)</button>
+            </div>
+          </div>
+
+          <!-- single -->
+          <div id="bgSingle" class="group">
+            <span class="sec-lab">Choose a clip</span>
+            <div class="bg-preview"><video id="bgPreview" muted loop playsinline></video></div>
+            <div class="bg-grid" id="bgGrid"></div>
+          </div>
+
+          <!-- collage -->
+          <div id="bgCollage" class="group" style="display:none">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="sec-lab">One clip per verse</span>
+              <button id="shuffleAll" class="btn-ghost" style="margin-left:auto;font-size:11px;padding:7px 11px">🎲 Shuffle all</button>
+            </div>
+            <div class="note" style="margin-top:-4px">Each verse gets its own clip — stretched up if shorter than the verse, trimmed if longer. Re-roll any one with 🎲 or pick a specific clip.</div>
+            <div class="collage-grid" id="collageGrid"></div>
+          </div>
+
+          <div class="group">
+            <span class="sec-lab">Grade — baked into the clip</span>
+            <div class="grade-row"><label>Blur</label><input type="range" id="bgBlur" min="0" max="16" step="0.5" value="2.5" /><output id="bgBlurOut">2.5 px</output></div>
+            <div class="grade-row"><label>Darken</label><input type="range" id="bgDarken" min="0" max="0.9" step="0.02" value="0.38" /><output id="bgDarkenOut">38%</output></div>
+          </div>
+
+          <div class="group">
+            <span class="sec-lab">Fade (composition opacity)</span>
+            <div class="fade-ctl">
+              <span class="fade-seg"><span class="fade-ico">↗</span> in <input type="number" id="bgFadeIn" min="0" max="10" step="0.1" value="0.9" /> s</span>
+              <span class="fade-seg"><span class="fade-ico">↘</span> out <input type="number" id="bgFadeOut" min="0" max="10" step="0.1" value="1" /> s</span>
+            </div>
+          </div>
+
+          <div id="paceBlock" class="group">
+            <div style="display:flex;align-items:center;gap:10px"><span class="sec-lab">Pacing — fit clip to recitation</span><span class="hint" id="paceHint" style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--gold)">—</span></div>
+            <div class="seg" id="paceSeg">
+              <button type="button" class="seg-btn on" data-fit="natural">Natural speed</button>
+              <button type="button" class="seg-btn" data-fit="stretch">Stretch to fill</button>
+            </div>
+            <div class="loop-row" id="loopRow">
+              <span class="sec-lab">Loop</span>
+              <div class="seg" id="loopSeg">
+                <button type="button" class="seg-btn on" data-loop="crossfade">Crossfade</button>
+                <button type="button" class="seg-btn" data-loop="boomerang">Boomerang</button>
+                <button type="button" class="seg-btn" data-loop="hard">Hard cut</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: REVIEW -->
+        <div class="step-panel" data-panel="review">
+          <div class="summary" id="summary"></div>
+          <label class="toggle"><input type="checkbox" id="append" checked /> Add to project (uncheck to replace all entries)</label>
+          <button id="saveBtn" class="btn-gold" disabled>Save &amp; bake</button>
+          <div class="note" id="saveNote">Saving bakes the background (blur · darken · pacing) and writes it into the active project, mirrored to Studio.</div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="reveal" style="animation-delay:.2s">
+    <span class="status" id="status">Ready.</span>
+    <div class="nav-right">
+      <button id="backBtn" class="btn-ghost" disabled>← Back</button>
+      <button id="nextBtn" class="btn-gold">Next →</button>
+    </div>
+  </footer>
+</div>
+
+<!-- Pexels download modal -->
+<div class="pexels" id="pexels">
+  <div class="px-panel">
+    <div class="px-head">
+      <div class="px-title">Download backgrounds <span class="px-sub">from Pexels</span></div>
+      <div class="px-filters"><span>vertical</span><span>1080p</span><span>60 fps+</span></div>
+      <button id="pxClose" class="icon-btn btn-ghost" title="Close (Esc)">✕</button>
+    </div>
+    <div class="px-search">
+      <input id="pxQuery" type="text" placeholder="search Pexels — e.g. forest, ocean, clouds, desert night" />
+      <button id="pxSearchBtn" class="btn-gold">Search</button>
+    </div>
+    <div class="px-grid" id="pxGrid"><div class="px-empty">Type a phrase and search. Vertical 1080p · 60 fps+ clips only.</div></div>
+    <div class="px-foot">
+      <span class="px-status" id="pxStatus"></span>
+      <button id="pxMore" class="btn-ghost" hidden>Load more</button>
+      <button id="pxDownload" class="btn-gold" disabled>Download 0 selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- Enlarged clip preview (click a collage thumbnail) — graded to match the bake. -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-inner" id="lbInner">
+    <video id="lbVideo" muted loop playsinline></video>
+    <div class="lb-cap" id="lbCap"></div>
+    <div class="lb-hint">click anywhere or press Esc to close</div>
+  </div>
+</div>
+
+<script>
+const FPS = 30;
+const $ = (id) => document.getElementById(id);
+const video = $("video");
+const STEPS = ["source","mark","type","breath","bg","review"];
+
+const state = {
+  verses: [], boundaries: [], selected: null, surahName: "", loaded: false,
+  recitationFile: "", step: "source",
+  bgMode: "single", background: "bg.mp4", bgFit: "natural", bgLoopStyle: "crossfade",
+  clipDur: 0, collage: [],
+};
+const bstate = { color: "#6fb3a8", split: 1.8, splitUserSet: false };
+// Typography — keys match lib/fonts.ts so the render matches this preview.
+const tstate = { arabicFont: "scheherazade", englishFont: "cormorant", arabicFontSize: 64, englishFontSize: 26, safeTop: 130, safeRight: 150, safeBottom: 340, safeLeft: 48 };
+const FONTS = {
+  arabic: [
+    { key:"scheherazade", label:"Scheherazade New", note:"Traditional Quranic Naskh", css:"'Scheherazade New', serif" },
+    { key:"amiri-quran",  label:"Amiri Quran",      note:"Mushaf-style, tuned for tashkeel", css:"'Amiri Quran', serif" },
+    { key:"amiri",        label:"Amiri",            note:"Classical Naskh, bolder", css:"'Amiri', serif" },
+    { key:"noto-naskh",   label:"Noto Naskh Arabic",note:"Clean, very legible", css:"'Noto Naskh Arabic', serif" },
+    { key:"lateef",       label:"Lateef",           note:"Warm extended Naskh", css:"'Lateef', serif" },
+    { key:"markazi",      label:"Markazi Text",     note:"Modern, condensed Naskh", css:"'Markazi Text', serif" },
+    { key:"aref-ruqaa",   label:"Aref Ruqaa",       note:"Ornate Thuluth — display", css:"'Aref Ruqaa', serif" },
+  ],
+  latin: [
+    { key:"cormorant",   label:"Cormorant Garamond", note:"Airy, high-contrast serif", css:"'Cormorant Garamond', serif" },
+    { key:"eb-garamond", label:"EB Garamond",        note:"Classic book Garamond", css:"'EB Garamond', serif" },
+    { key:"gentium",     label:"Gentium Book Plus",  note:"Pairs with Scheherazade", css:"'Gentium Book Plus', serif" },
+    { key:"crimson",     label:"Crimson Pro",        note:"Calm, literary serif", css:"'Crimson Pro', serif" },
+    { key:"lora",        label:"Lora",               note:"Sturdy, contemporary serif", css:"'Lora', serif" },
+    { key:"marcellus",   label:"Marcellus",          note:"Inscriptional elegant caps", css:"'Marcellus', serif" },
+  ],
+};
+const FONT_CSS = { arabic:{}, latin:{} };
+FONTS.arabic.forEach((f)=>FONT_CSS.arabic[f.key]=f.css);
+FONTS.latin.forEach((f)=>FONT_CSS.latin[f.key]=f.css);
+const TYPE_SAMPLE = { arabic:"بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", translation:"In the name of Allah, the Entirely Merciful, the Especially Merciful." };
+let bgFiles = [], savedEntries = [], projects = [], activeProject = null;
+const bgDurations = {}; // filename -> seconds, probed from each clip's metadata
+
+// ---------- helpers ----------
+const fmtTC = (ms) => { if (ms == null || isNaN(ms)) return null; const t = Math.max(0, ms); const m = Math.floor(t/60000); const s = Math.floor((t%60000)/1000); const mm = String(t%1000|0).padStart(3,"0"); return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}.${mm}`; };
+const msToFrame = (ms) => Math.round((ms/1000)*FPS);
+const curMs = () => video.currentTime * 1000;
+const baseName = (p) => String(p||"").split(/[\\/]/).pop();
+async function api(path, body) { const r = await fetch(path, { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify(body||{}) }); const j = await r.json().catch(()=>({})); if (!r.ok) throw new Error(j.error||"request failed"); return j; }
+function setStatus(msg, kind) { const el=$("status"); el.textContent=msg; el.className="status"+(kind?" "+kind:""); $("topStatus").textContent=msg; $("topStatus").className="header-right status"+(kind?" "+kind:""); }
+
+// color helpers (mirror BreatheHook.tsx)
+const hexParts = (hex) => { const m=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex||""); return m?[parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]:[212,168,83]; };
+const rgbaHex = (hex,a) => { const [r,g,b]=hexParts(hex); return `rgba(${r},${g},${b},${a})`; };
+const lightenHex = (hex,t) => { const [r,g,b]=hexParts(hex); const mix=(c)=>Math.round(c+(255-c)*t); return `rgb(${mix(r)},${mix(g)},${mix(b)})`; };
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const easeInOutCubic = (t) => (t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2);
+function recitationSeconds() { const b=state.boundaries; if (!b.length||b.some((x)=>x==null)) return 0; return (b[b.length-1]-b[0])/1000; }
+// Effective on-screen seconds the collage clip must fill for verse i. Mirrors the
+// server bake: each verse spans its marked window; the LAST verse also carries the
+// tail padding (default 1.5s + 0.5s) so the background never runs dry.
+const TAIL_SECONDS = 1.5;
+function verseFitSeconds(i) {
+  const b = state.boundaries;
+  if (!b || b[i] == null || b[i + 1] == null) return 0;
+  let d = Math.max(0.3, (b[i + 1] - b[i]) / 1000);
+  if (i === state.verses.length - 1) d += TAIL_SECONDS + 0.5;
+  return d;
+}
+
+// ---------- step navigation ----------
+function goStep(name) {
+  if (!STEPS.includes(name)) return;
+  state.step = name;
+  document.querySelectorAll(".step-tab").forEach((t)=>t.classList.toggle("on", t.dataset.step===name));
+  document.querySelectorAll(".step-panel").forEach((p)=>p.classList.toggle("on", p.dataset.panel===name));
+  const titles = { source:"Source", mark:"Mark verses", type:"Typography", breath:"Breath intro", bg:"Background", review:"Review & save" };
+  $("panelTitle").textContent = titles[name];
+  const idx = STEPS.indexOf(name);
+  $("backBtn").disabled = idx === 0;
+  $("nextBtn").style.display = idx === STEPS.length-1 ? "none" : "";
+  // mark earlier steps done
+  document.querySelectorAll(".step-tab").forEach((t)=>{ t.classList.toggle("done", STEPS.indexOf(t.dataset.step) < idx); });
+  // The marker editor (stage + transport) lives only on the Mark step; all other
+  // steps expand to a single full-width column. Pause playback when it's hidden.
+  document.querySelector("main").classList.toggle("solo", name !== "mark");
+  if (name !== "mark") video.pause();
+  if (name === "breath") startBreath(); else stopBreath();
+  if (name === "type") { syncTypeUI(); requestAnimationFrame(updateTypePreview); }
+  if (name === "bg") { updatePaceUI(); if (state.bgMode === "collage") buildCollage(); }
+  if (name === "review") renderSummary();
+  panelHint();
+}
+function panelHint() {
+  const h = $("panelHint");
+  if (state.step === "mark") { const set = state.boundaries.filter((b)=>b!=null).length; h.innerHTML = `<b>${set}</b>/${state.boundaries.length} marked`; }
+  else if (state.step === "bg") h.textContent = state.bgMode === "collage" ? "per verse" : "single clip";
+  else if (state.step === "type") { const a=FONTS.arabic.find((f)=>f.key===tstate.arabicFont), e=FONTS.latin.find((f)=>f.key===tstate.englishFont); h.innerHTML = `<b>${a?a.label:"?"}</b> · ${e?e.label:"?"}`; }
+  else h.textContent = "";
+}
+document.querySelectorAll(".step-tab").forEach((t)=>t.addEventListener("click", ()=>goStep(t.dataset.step)));
+$("nextBtn").addEventListener("click", ()=>{ const i=STEPS.indexOf(state.step); if(i<STEPS.length-1) goStep(STEPS[i+1]); });
+$("backBtn").addEventListener("click", ()=>{ const i=STEPS.indexOf(state.step); if(i>0) goStep(STEPS[i-1]); });
+
+// ---------- projects ----------
+async function loadProjects(keepStep) {
+  const r = await fetch("/api/projects"); const j = await r.json();
+  projects = j.projects||[]; activeProject = j.active;
+  const sel = $("projSel"); sel.innerHTML = "";
+  projects.forEach((p)=>{ const o=document.createElement("option"); o.value=p.slug; o.textContent=`${p.name} (${p.count})`; sel.appendChild(o); });
+  if (activeProject) sel.value = activeProject;
+}
+$("projSel").addEventListener("change", async (e)=>{
+  await api("/api/projects/activate", { slug: e.target.value });
+  activeProject = e.target.value;
+  await loadSavedProps(false);
+  await loadProjects();
+  setStatus(`Switched to “${projects.find(p=>p.slug===activeProject)?.name||activeProject}”. Reload Studio to view it.`, "ok");
+});
+$("projNew").addEventListener("click", async ()=>{
+  const name = prompt("New project name:", ""); if (!name) return;
+  const j = await api("/api/projects/create", { name });
+  await loadProjects(); await loadSavedProps(false);
+  // reset to a clean slate
+  state.loaded=false; state.verses=[]; state.boundaries=[]; renderVerses(); render();
+  setStatus(`Created “${name}”. Now active. Reload Studio after saving.`, "ok");
+});
+$("projRename").addEventListener("click", async ()=>{
+  const cur = projects.find(p=>p.slug===activeProject); if (!cur) return;
+  const name = prompt("Rename project:", cur.name); if (!name) return;
+  await api("/api/projects/rename", { slug: activeProject, name });
+  await loadProjects();
+});
+$("projDelete").addEventListener("click", async ()=>{
+  if (projects.length <= 1) { setStatus("Can't delete the only project.", "err"); return; }
+  const cur = projects.find(p=>p.slug===activeProject); if (!cur) return;
+  if (!confirm(`Delete project “${cur.name}” and its entries? This cannot be undone.`)) return;
+  await api("/api/projects/delete", { slug: activeProject });
+  await loadProjects(); await loadSavedProps(false);
+  setStatus("Project deleted.", "ok");
+});
+
+// ---------- recitation sources ----------
+async function refreshRecitations(selectFile) {
+  const r = await fetch("/api/recitations"); const { files } = await r.json();
+  const sel = $("videoSel"); sel.innerHTML = "";
+  if (!files.length) { sel.innerHTML = '<option value="">no files in public/media/recitations/</option>'; return; }
+  files.forEach((f)=>{ const o=document.createElement("option"); o.value=f; o.textContent=f; sel.appendChild(o); });
+  const pick = selectFile && files.includes(selectFile) ? selectFile : files[0];
+  sel.value = pick; loadVideo(pick);
+}
+function loadVideo(name) {
+  if (!name) return;
+  state.recitationFile = name;
+  video.src = "/media/recitations/" + encodeURIComponent(name);
+  video.style.display = "block"; $("ph").style.display = "none"; video.load();
+}
+$("videoSel").addEventListener("change", (e)=>loadVideo(e.target.value));
+
+async function fetchYouTube() {
+  const url = $("ytUrl").value.trim(); if (!url) { setStatus("Paste a YouTube URL first.","err"); return; }
+  const btn=$("ytBtn"); btn.disabled=true; const lab=btn.textContent; btn.textContent="…";
+  setStatus("Downloading from YouTube — this can take a moment…");
+  try {
+    const j = await api("/api/youtube", { url });
+    await refreshRecitations(j.file);
+    setStatus(`Loaded “${j.title}”. Pick surah + range, then Load verses.`, "ok");
+  } catch (e) { setStatus("YouTube: "+e.message, "err"); }
+  finally { btn.disabled=false; btn.textContent=lab; }
+}
+$("ytBtn").addEventListener("click", fetchYouTube);
+$("ytUrl").addEventListener("keydown", (e)=>{ if (e.key==="Enter") fetchYouTube(); });
+
+// ---------- surahs / verses ----------
+let surahs = [];
+async function loadSurahs() {
+  const r = await fetch("/api/surahs"); const j = await r.json();
+  if (!r.ok) { setStatus(j.error||"couldn't load surahs","err"); return; }
+  surahs = j.surahs; const sel=$("surah"); sel.innerHTML="";
+  surahs.forEach((s)=>{ const o=document.createElement("option"); o.value=s.number; o.textContent=`${s.number}. ${s.englishName}`; sel.appendChild(o); });
+  sel.value="1"; populateVerseDropdowns();
+}
+function populateVerseDropdowns() {
+  const s = surahs.find((x)=>x.number === +$("surah").value); if (!s) return;
+  for (const id of ["from","to"]) { const sel=$(id); sel.innerHTML=""; for (let a=1;a<=s.ayahs;a++){ const o=document.createElement("option"); o.value=a; o.textContent=a; sel.appendChild(o); } }
+  $("from").value="1"; $("to").value=String(Math.min(s.ayahs,1));
+}
+$("surah").addEventListener("change", populateVerseDropdowns);
+$("from").addEventListener("change", ()=>{ if (+$("to").value < +$("from").value) $("to").value=$("from").value; });
+
+async function loadVerses() {
+  const surah=+$("surah").value, from=+$("from").value, to=+$("to").value;
+  if (!surah||!from||!to||to<from) { setStatus("Bad range.","err"); return; }
+  setStatus("Loading verses…");
+  const r = await fetch(`/api/verses?surah=${surah}&from=${from}&to=${to}`); const j = await r.json();
+  if (!r.ok) { setStatus(j.error||"Failed.","err"); return; }
+  state.verses = j.verses; state.surahName = j.surahName;
+  state.boundaries = new Array(j.verses.length+1).fill(null);
+  state.selected = null; state.loaded = true;
+  state.collage = j.verses.map(()=> pickRandomBg());
+  renderVerses(); buildCollage(); render();
+  setStatus(`Loaded ${j.verses.length} verses. Go to Mark and tap Ctrl+Space at each verse start.`, "ok");
+  goStep("mark");
+}
+$("loadBtn").addEventListener("click", loadVerses);
+
+function nextUnset() { const i = state.boundaries.findIndex((b)=>b==null); return i===-1?null:i; }
+function renderVerses() {
+  const wrap=$("verses"); wrap.innerHTML="";
+  state.verses.forEach((v,i)=>{
+    const el=document.createElement("div"); el.className="verse"; el.dataset.i=i;
+    el.innerHTML = `<div class="top"><span class="vnum">${v.ayahNumber}</span><span class="vstate" data-state></span></div>
+      <div class="arabic">${v.arabic}</div><div class="trans">${v.translation}</div>
+      <div class="times"><div class="chip" data-chip="${i}"><span class="lab">start</span><span class="t">—</span></div>
+      <div class="chip" data-chip="${i+1}"><span class="lab">end</span><span class="t">—</span></div></div>`;
+    el.addEventListener("click",(e)=>{ const chip=e.target.closest("[data-chip]"); selectBoundary(chip?+chip.dataset.chip:i); });
+    wrap.appendChild(el);
+  });
+}
+function selectBoundary(i) { state.selected=i; if (state.boundaries[i]!=null) seekMs(state.boundaries[i]); render(); }
+
+// ---------- transport ----------
+function seekMs(ms) { video.currentTime = Math.max(0,ms)/1000; }
+function stepFrames(n) { video.pause(); video.currentTime = Math.max(0,(msToFrame(curMs())+n))/FPS; }
+function mark() {
+  if (!state.loaded) return;
+  const i = state.selected!=null && state.boundaries[state.selected]==null ? state.selected : nextUnset();
+  if (i==null) { setStatus("All boundaries set. Adjust with ← → or Update.","ok"); return; }
+  state.boundaries[i]=curMs(); state.selected=i;
+  const nx=nextUnset(); if (nx!=null) state.selected=nx; render(); panelHint();
+}
+function updateSelected() { if (state.selected==null) return; state.boundaries[state.selected]=curMs(); render(); }
+function clearSelected() { if (state.selected==null) return; state.boundaries[state.selected]=null; render(); panelHint(); }
+$("playBtn").addEventListener("click", togglePlay);
+$("homeBtn").addEventListener("click", ()=>{ video.pause(); video.currentTime=0; });
+$("stepB").addEventListener("click", ()=>stepFrames(-1));
+$("stepF").addEventListener("click", ()=>stepFrames(1));
+$("markBtn").addEventListener("click", mark);
+$("updateBtn").addEventListener("click", updateSelected);
+$("clearBtn").addEventListener("click", clearSelected);
+document.querySelectorAll(".controls button").forEach((b)=>b.addEventListener("click",()=>b.blur()));
+function togglePlay() { if (video.paused) video.play(); else video.pause(); }
+$("screen").addEventListener("click",(e)=>{ if (e.target===video) togglePlay(); });
+$("timeline").addEventListener("click",(e)=>{ if(!video.duration) return; const rect=e.currentTarget.getBoundingClientRect(); video.currentTime=((e.clientX-rect.left)/rect.width)*video.duration; });
+function seekSeconds(n) { if(!video.duration) return; video.currentTime=Math.max(0,Math.min(video.duration,video.currentTime+n)); }
+
+document.addEventListener("keydown",(e)=>{
+  if (e.key==="Escape") { closeLightbox(); closePexels(); return; }
+  if ($("lightbox").classList.contains("on") || $("pexels").classList.contains("on")) return; // modals swallow transport keys
+  if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  switch (e.key) {
+    case " ": e.preventDefault(); (e.ctrlKey||e.metaKey)?mark():togglePlay(); break;
+    case "ArrowLeft": e.preventDefault(); seekSeconds(-1); break;
+    case "ArrowRight": e.preventDefault(); seekSeconds(1); break;
+    case "u": case "U": e.preventDefault(); updateSelected(); break;
+    case "Backspace": e.preventDefault(); clearSelected(); break;
+    case "Home": e.preventDefault(); video.pause(); video.currentTime=0; break;
+  }
+});
+
+// ---------- render loop ----------
+function render() {
+  const ms=curMs(); const tc=fmtTC(ms)||"00:00.000";
+  $("tc").innerHTML = tc.slice(0,5)+'<span class="ms">'+tc.slice(5)+'</span>';
+  $("frame").textContent = msToFrame(ms);
+  if (video.duration) { $("dur").textContent="duration "+fmtTC(video.duration*1000); const pct=(video.currentTime/video.duration)*100; $("tlHead").style.left=pct+"%"; $("tlPlayed").style.width=pct+"%"; }
+  const tl=$("timeline"); tl.querySelectorAll(".tl-tick").forEach((n)=>n.remove());
+  if (video.duration) state.boundaries.forEach((b,i)=>{ if(b==null)return; const t=document.createElement("div"); t.className="tl-tick"+(i===state.selected?" sel":""); t.style.left=(b/1000/video.duration*100)+"%"; tl.appendChild(t); });
+  const nx = state.selected!=null && state.boundaries[state.selected]==null ? state.selected : nextUnset();
+  document.querySelectorAll(".verse").forEach((el)=>{
+    const i=+el.dataset.i; const start=state.boundaries[i], end=state.boundaries[i+1];
+    const isNext = nx===i||nx===i+1; el.classList.toggle("next", isNext);
+    const st=el.querySelector("[data-state]"); st.textContent = start!=null&&end!=null?"✓ set":(isNext?"marking":"pending");
+    el.querySelectorAll(".chip").forEach((chip)=>{ const bi=+chip.dataset.chip; const val=state.boundaries[bi]; chip.classList.toggle("set",val!=null); chip.classList.toggle("empty",val==null); chip.classList.toggle("sel",bi===state.selected); chip.querySelector(".t").textContent=val!=null?fmtTC(val):"—"; });
+  });
+  $("updateBtn").disabled = state.selected==null;
+  $("clearBtn").disabled = state.selected==null || state.boundaries[state.selected]==null;
+  const all = state.boundaries.length && state.boundaries.every((b)=>b!=null);
+  const asc = all && state.boundaries.every((b,i)=>i===0||b>state.boundaries[i-1]);
+  $("saveBtn").disabled = !(all && asc);
+}
+function tick(){ render(); requestAnimationFrame(tick); }
+video.addEventListener("play",()=>{ $("playBtn").textContent="❚❚ Pause"; });
+video.addEventListener("pause",()=>{ $("playBtn").textContent="► Play"; });
+
+// ---------- backgrounds ----------
+function pickRandomBg() { return bgFiles.length ? bgFiles[Math.floor(Math.random()*bgFiles.length)] : "bg.mp4"; }
+async function loadBackgrounds() {
+  const r = await fetch("/api/backgrounds"); const { files } = await r.json();
+  bgFiles = files || [];
+  const grid=$("bgGrid"); grid.innerHTML="";
+  if (!bgFiles.length) { grid.innerHTML='<div style="color:var(--dim);font-family:var(--mono);font-size:12px">No clips in public/media/backgrounds/.</div>'; return; }
+  if (!bgFiles.includes(state.background)) state.background = bgFiles.find((f)=>/^bg/i.test(f))||bgFiles[0];
+  bgFiles.forEach((f)=>{
+    const card=document.createElement("div"); card.className="bg-card"+(f===state.background?" sel":""); card.dataset.name=f;
+    card.innerHTML=`<video muted playsinline preload="metadata" src="/media/backgrounds/${encodeURIComponent(f)}#t=1"></video><span class="check">✓</span><span class="tag">${f}</span>`;
+    const vid=card.querySelector("video");
+    card.addEventListener("mouseenter",()=>{ vid.currentTime=0; vid.play().catch(()=>{}); });
+    card.addEventListener("mouseleave",()=>vid.pause());
+    card.addEventListener("click",()=>selectBackground(f));
+    grid.appendChild(card);
+  });
+  selectBackground(state.background);
+}
+function gradeFilter() { const b=Math.max(0,parseFloat($("bgBlur").value)||0); const d=Math.max(0,parseFloat($("bgDarken").value)||0); return `blur(${b}px) saturate(0.7) brightness(${(1-d).toFixed(3)})`; }
+function applyGrade() {
+  const b=Math.max(0,parseFloat($("bgBlur").value)||0); const d=Math.max(0,parseFloat($("bgDarken").value)||0);
+  $("bgBlurOut").textContent=b+" px"; $("bgDarkenOut").textContent=Math.round(d*100)+"%";
+  const f=gradeFilter();
+  const pv=$("bgPreview"); if (pv) pv.style.filter=f;
+  // Reflect the grade in every collage thumbnail + the open lightbox.
+  document.querySelectorAll("#collageGrid .col-thumb video").forEach((v)=>{ v.style.filter=f; });
+  if ($("lightbox").classList.contains("on")) $("lbVideo").style.filter=f;
+}
+$("bgBlur").addEventListener("input", applyGrade);
+$("bgDarken").addEventListener("input", applyGrade);
+function selectBackground(name) {
+  if (!name) return; state.background=name;
+  document.querySelectorAll(".bg-card").forEach((c)=>c.classList.toggle("sel", c.dataset.name===name));
+  const pv=$("bgPreview"); if (pv) { pv.src="/media/backgrounds/"+encodeURIComponent(name); pv.style.filter=gradeFilter(); pv.play().catch(()=>{}); }
+}
+$("bgPreview").addEventListener("loadedmetadata", ()=>{ state.clipDur=$("bgPreview").duration||0; updatePaceUI(); });
+
+// bg mode toggle
+document.querySelectorAll("#bgModeSeg .seg-btn").forEach((btn)=>btn.addEventListener("click",()=>{
+  state.bgMode=btn.dataset.mode;
+  document.querySelectorAll("#bgModeSeg .seg-btn").forEach((b)=>b.classList.toggle("on", b===btn));
+  $("bgSingle").style.display = state.bgMode==="single"?"":"none";
+  $("bgCollage").style.display = state.bgMode==="collage"?"":"none";
+  $("paceBlock").style.display = state.bgMode==="single"?"":"none";
+  if (state.bgMode==="collage" && state.collage.length!==state.verses.length) state.collage=state.verses.map(()=>pickRandomBg());
+  buildCollage(); panelHint();
+}));
+
+// collage
+function buildCollage() {
+  const grid=$("collageGrid"); if (!grid) return; grid.innerHTML="";
+  if (!state.verses.length) { grid.innerHTML='<div class="note">Load a verse range first.</div>'; return; }
+  state.verses.forEach((v,i)=>{
+    if (!state.collage[i]) state.collage[i]=pickRandomBg();
+    const card=document.createElement("div"); card.className="col-card";
+    const opts = bgFiles.map((f)=>`<option value="${f}"${f===state.collage[i]?" selected":""}>${f}</option>`).join("");
+    card.innerHTML=`<div class="col-thumb"><video muted playsinline preload="metadata" src="/media/backgrounds/${encodeURIComponent(state.collage[i])}#t=1"></video></div>
+      <div class="col-meta"><span class="vnum">verse ${v.ayahNumber}</span><select data-i="${i}">${opts}</select><div class="col-fit"></div></div>
+      <button class="col-dice btn-ghost" data-i="${i}" title="Random clip">🎲</button>`;
+    const vid=card.querySelector("video");
+    vid.style.filter=gradeFilter();
+    vid.addEventListener("loadedmetadata",()=>{ bgDurations[state.collage[i]]=vid.duration||0; updateCollageFit(i); });
+    card.addEventListener("mouseenter",()=>{ vid.currentTime=0; vid.play().catch(()=>{}); });
+    card.addEventListener("mouseleave",()=>vid.pause());
+    card.querySelector(".col-thumb").addEventListener("click",()=>openLightbox(state.collage[i], i));
+    card.querySelector("select").addEventListener("change",(e)=>{ state.collage[i]=e.target.value; refreshCollageThumb(i); updateCollageFit(i); });
+    card.querySelector(".col-dice").addEventListener("click",()=>{ state.collage[i]=pickRandomBg(); rebuildCollageCard(i); });
+    grid.appendChild(card);
+    updateCollageFit(i);
+  });
+}
+// Length of the chosen clip vs the verse it must cover, with the trim/stretch the
+// bake will apply. clip < verse → stretched to fill; clip > verse → trimmed.
+function updateCollageFit(i) {
+  const card=$("collageGrid").children[i]; if(!card) return;
+  const el=card.querySelector(".col-fit"); if(!el) return;
+  const clip=bgDurations[state.collage[i]], verse=verseFitSeconds(i);
+  const isLast=i===state.verses.length-1;
+  const clipStr=clip!=null?clip.toFixed(1)+"s":"…", verseStr=verse?verse.toFixed(1)+"s":"—";
+  let badge="", cls="";
+  if (clip!=null && verse) {
+    if (clip < verse-0.05) { cls="stretch"; badge="stretch ×"+(verse/clip).toFixed(2); }
+    else if (clip > verse+0.05) { cls="trim"; badge="trim −"+(clip-verse).toFixed(1)+"s"; }
+    else { cls="fit"; badge="exact fit"; }
+  }
+  el.className="col-fit"+(cls?" "+cls:"");
+  el.innerHTML=`<span class="m">clip <b>${clipStr}</b> · verse <b>${verseStr}</b>${isLast&&verse?' <i>+tail</i>':''}</span>`+
+    (badge?`<span class="badge">${badge}</span>`:"");
+}
+function refreshCollageThumb(i) { const card=$("collageGrid").children[i]; if(!card) return; card.querySelector("video").src=`/media/backgrounds/${encodeURIComponent(state.collage[i])}#t=1`; }
+function rebuildCollageCard(i) { const card=$("collageGrid").children[i]; if(!card) return; card.querySelector("select").value=state.collage[i]; refreshCollageThumb(i); updateCollageFit(i); }
+$("shuffleAll").addEventListener("click", ()=>{ state.collage=state.verses.map(()=>pickRandomBg()); buildCollage(); });
+
+// lightbox — enlarged, graded clip preview
+let lbIndex=null, lbName=null;
+function lbCaption(name, i) {
+  if (i==null || !state.verses[i]) return name;
+  const clip=bgDurations[name], verse=verseFitSeconds(i);
+  let fit="";
+  if (clip!=null && verse) {
+    if (clip<verse-0.05) fit=` → stretch ×${(verse/clip).toFixed(2)}`;
+    else if (clip>verse+0.05) fit=` → trim −${(clip-verse).toFixed(1)}s`;
+    else fit=" → exact fit";
+  }
+  const clipStr=clip!=null?clip.toFixed(1)+"s":"…", verseStr=verse?verse.toFixed(1)+"s":"—";
+  return `<b>Verse ${state.verses[i].ayahNumber}</b> · ${name} · clip ${clipStr} · verse ${verseStr}${fit}`;
+}
+function openLightbox(name, i) {
+  lbName=name; lbIndex=i;
+  const v=$("lbVideo");
+  v.src="/media/backgrounds/"+encodeURIComponent(name);
+  v.style.filter=gradeFilter();
+  $("lbCap").innerHTML=lbCaption(name, i);
+  $("lightbox").classList.add("on");
+  v.currentTime=0; v.play().catch(()=>{});
+}
+function closeLightbox() {
+  const lb=$("lightbox"); if(!lb.classList.contains("on")) return;
+  lb.classList.remove("on"); const v=$("lbVideo"); v.pause(); lbIndex=null; lbName=null;
+}
+$("lightbox").addEventListener("click", closeLightbox);
+$("lbVideo").addEventListener("loadedmetadata",()=>{
+  if(!lbName) return; bgDurations[lbName]=$("lbVideo").duration||0;
+  if(lbIndex!=null){ $("lbCap").innerHTML=lbCaption(lbName, lbIndex); updateCollageFit(lbIndex); }
+});
+
+// ---------- pexels download ----------
+const px = { sel: new Map(), page: 1, query: "", busy: false };
+function openPexels() { $("pexels").classList.add("on"); setTimeout(()=>$("pxQuery").focus(), 50); }
+function closePexels() { $("pexels").classList.remove("on"); }
+function pxSetStatus(msg, kind) { const el=$("pxStatus"); el.textContent=msg||""; el.className="px-status"+(kind?" "+kind:""); }
+function pxUpdateBtn() {
+  const n=px.sel.size; const b=$("pxDownload");
+  b.textContent=`Download ${n} selected`; b.disabled = n===0 || px.busy;
+}
+async function pxSearch(reset) {
+  const q=$("pxQuery").value.trim();
+  if (!q) { pxSetStatus("Type a search phrase.", "err"); return; }
+  if (reset) { px.page=1; px.query=q; px.sel.clear(); pxUpdateBtn(); $("pxGrid").innerHTML=""; }
+  px.busy=true; $("pxSearchBtn").disabled=true; $("pxMore").disabled=true;
+  pxSetStatus("Searching…");
+  try {
+    const r=await fetch(`/api/pexels/search?query=${encodeURIComponent(px.query)}&page=${px.page}`);
+    const j=await r.json();
+    if (!r.ok) throw new Error(j.error||"search failed");
+    renderPxResults(j.videos||[], px.page>1);
+    $("pxMore").hidden = !j.hasMore;
+    const shown=$("pxGrid").querySelectorAll(".px-card").length;
+    pxSetStatus(shown ? `${shown} vertical 1080p·60fps+ clips` : "No matching clips — try another phrase.");
+    if (!shown && px.page===1) $("pxGrid").innerHTML='<div class="px-empty">No vertical 1080p·60fps+ clips for that phrase.</div>';
+  } catch (e) { pxSetStatus("Pexels: "+e.message, "err"); }
+  finally { px.busy=false; $("pxSearchBtn").disabled=false; $("pxMore").disabled=false; pxUpdateBtn(); }
+}
+function renderPxResults(videos, append) {
+  const grid=$("pxGrid"); if (!append) grid.innerHTML="";
+  videos.forEach((v)=>{
+    const name=`pexels_${v.id}.mp4`; const have=bgFiles.includes(name);
+    const card=document.createElement("div"); card.className="px-card"+(have?" have":"")+(px.sel.has(v.id)?" sel":"");
+    card.dataset.id=v.id; card.dataset.name=name;
+    card.innerHTML=`<img loading="lazy" src="${v.thumb}" alt="" />
+      <span class="px-dur">${v.duration}s</span>
+      <span class="px-check">✓</span>
+      <span class="px-by">${v.photographer||"Pexels"}</span>`;
+    card.addEventListener("click",()=>pxToggle(card, v));
+    grid.appendChild(card);
+  });
+}
+function pxToggle(card, v) {
+  if (card.classList.contains("have")) return; // already in library
+  if (px.sel.has(v.id)) { px.sel.delete(v.id); card.classList.remove("sel"); }
+  else { px.sel.set(v.id, { id:v.id, link:v.link }); card.classList.add("sel"); }
+  pxUpdateBtn();
+}
+async function pxDownload() {
+  if (!px.sel.size) return;
+  const items=[...px.sel.values()];
+  px.busy=true; pxUpdateBtn(); $("pxDownload").textContent="Downloading…";
+  pxSetStatus(`Downloading ${items.length} clip(s)…`);
+  try {
+    const j=await api("/api/pexels/import", { items });
+    const parts=[]; if (j.saved.length) parts.push(`${j.saved.length} saved`);
+    if (j.skipped.length) parts.push(`${j.skipped.length} already had`);
+    if (j.errors.length) parts.push(`${j.errors.length} failed`);
+    pxSetStatus("✓ "+parts.join(" · "), j.errors.length?"err":"ok");
+    px.sel.clear();
+    await loadBackgrounds(); buildCollage(); // new clips appear in single + collage pickers
+    // mark downloaded cards "in library" in place — no re-search needed.
+    document.querySelectorAll("#pxGrid .px-card").forEach((c)=>{
+      c.classList.remove("sel");
+      if (bgFiles.includes(c.dataset.name)) c.classList.add("have");
+    });
+  } catch (e) { pxSetStatus("Download failed: "+e.message, "err"); }
+  finally { px.busy=false; pxUpdateBtn(); $("pxDownload").textContent=`Download ${px.sel.size} selected`; }
+}
+$("pxOpen").addEventListener("click", openPexels);
+$("pxClose").addEventListener("click", closePexels);
+$("pexels").addEventListener("click",(e)=>{ if (e.target===$("pexels")) closePexels(); });
+$("pxSearchBtn").addEventListener("click", ()=>pxSearch(true));
+$("pxQuery").addEventListener("keydown",(e)=>{ if (e.key==="Enter") pxSearch(true); });
+$("pxMore").addEventListener("click", ()=>{ px.page++; pxSearch(false); });
+$("pxDownload").addEventListener("click", pxDownload);
+
+// pacing
+function updatePaceUI() {
+  document.querySelectorAll("#paceSeg .seg-btn").forEach((b)=>b.classList.toggle("on", b.dataset.fit===state.bgFit));
+  document.querySelectorAll("#loopSeg .seg-btn").forEach((b)=>b.classList.toggle("on", b.dataset.loop===state.bgLoopStyle));
+  const rec=recitationSeconds(), clip=state.clipDur;
+  const isShort = clip>0 && rec>0 && clip < rec-0.05;
+  $("loopRow").hidden = !(state.bgFit==="natural" && isShort);
+  const hint=$("paceHint");
+  if (!rec||!clip) { hint.textContent = clip?`clip ${clip.toFixed(1)}s`:"—"; return; }
+  if (state.bgFit==="stretch") hint.textContent = clip>=rec ? `clip ${clip.toFixed(1)}s → sped ×${(clip/rec).toFixed(2)}` : `clip ${clip.toFixed(1)}s → slowed ×${(rec/clip).toFixed(2)}`;
+  else if (clip>=rec-0.05) hint.textContent = `clip ${clip.toFixed(1)}s ≥ recitation ${rec.toFixed(1)}s → trimmed`;
+  else hint.textContent = `clip ${clip.toFixed(1)}s · recitation ${rec.toFixed(1)}s → loops ~${(rec/clip).toFixed(1)}×`;
+}
+document.querySelectorAll("#paceSeg .seg-btn").forEach((b)=>b.addEventListener("click",()=>{ state.bgFit=b.dataset.fit; updatePaceUI(); }));
+document.querySelectorAll("#loopSeg .seg-btn").forEach((b)=>b.addEventListener("click",()=>{ state.bgLoopStyle=b.dataset.loop; updatePaceUI(); }));
+
+// ---------- typography ----------
+function buildFontPickers() {
+  for (const kind of ["arabic","latin"]) {
+    const grid = $(kind==="arabic"?"arFontGrid":"enFontGrid"); if (!grid) continue;
+    grid.innerHTML="";
+    const sample = kind==="arabic" ? "بِسْمِ ٱللَّهِ" : "In the name of Allah";
+    const cls = kind==="arabic" ? "ar" : "en";
+    FONTS[kind].forEach((f)=>{
+      const card=document.createElement("div"); card.className="font-card"; card.dataset.kind=kind; card.dataset.key=f.key;
+      card.innerHTML=`<div class="fc-sample ${cls}" style="font-family:${f.css}">${sample}</div>
+        <div class="fc-meta"><span class="fc-name">${f.label}</span><span class="fc-note">${f.note}</span></div>`;
+      card.addEventListener("click",()=>selectFont(kind, f.key));
+      grid.appendChild(card);
+    });
+  }
+}
+function selectFont(kind, key) {
+  if (kind==="arabic") tstate.arabicFont=key; else tstate.englishFont=key;
+  syncTypeUI(); updateTypePreview(); panelHint();
+}
+function syncTypeUI() {
+  document.querySelectorAll('#arFontGrid .font-card').forEach((c)=>c.classList.toggle("sel", c.dataset.key===tstate.arabicFont));
+  document.querySelectorAll('#enFontGrid .font-card').forEach((c)=>c.classList.toggle("sel", c.dataset.key===tstate.englishFont));
+  $("arFontSize").value=tstate.arabicFontSize; $("enFontSize").value=tstate.englishFontSize;
+  $("arSizeOut").textContent=tstate.arabicFontSize+" px"; $("enSizeOut").textContent=tstate.englishFontSize+" px";
+  $("safeTop").value=tstate.safeTop; $("safeRight").value=tstate.safeRight; $("safeBottom").value=tstate.safeBottom; $("safeLeft").value=tstate.safeLeft;
+}
+// Preview scales the 900px-wide render text column down to the on-screen stage so
+// the Arabic/English proportions match the final frame; slider labels show true px.
+function updateTypePreview() {
+  const v = state.verses[0] || TYPE_SAMPLE;
+  const inner = $("typeStageInner"); if (!inner) return;
+  const factor = (inner.clientWidth || 700) / 900;
+  $("typeAr").style.fontFamily = FONT_CSS.arabic[tstate.arabicFont];
+  $("typeAr").style.fontSize = (tstate.arabicFontSize*factor).toFixed(1)+"px";
+  $("typeAr").textContent = v.arabic;
+  $("typeEn").style.fontFamily = FONT_CSS.latin[tstate.englishFont];
+  $("typeEn").style.fontSize = (tstate.englishFontSize*factor).toFixed(1)+"px";
+  $("typeEn").textContent = v.translation;
+  $("typeDiv").style.width = (60*factor).toFixed(1)+"px";
+  $("typeDiv").style.background = `linear-gradient(to right, transparent, ${bstate.color}, transparent)`;
+  $("arSizeOut").textContent=tstate.arabicFontSize+" px"; $("enSizeOut").textContent=tstate.englishFontSize+" px";
+}
+$("arFontSize").addEventListener("input",(e)=>{ tstate.arabicFontSize=+e.target.value; updateTypePreview(); });
+$("enFontSize").addEventListener("input",(e)=>{ tstate.englishFontSize=+e.target.value; updateTypePreview(); });
+const clampSafe=(v)=>Math.max(0, Math.round(+v||0));
+$("safeTop").addEventListener("input",(e)=>{ tstate.safeTop=clampSafe(e.target.value); });
+$("safeRight").addEventListener("input",(e)=>{ tstate.safeRight=clampSafe(e.target.value); });
+$("safeBottom").addEventListener("input",(e)=>{ tstate.safeBottom=clampSafe(e.target.value); });
+$("safeLeft").addEventListener("input",(e)=>{ tstate.safeLeft=clampSafe(e.target.value); });
+window.addEventListener("resize",()=>{ if (state.step==="type") updateTypePreview(); });
+
+// ---------- breath ----------
+const CALM = [["Sage","#8fb39b"],["Teal","#6fb3a8"],["Sea","#5e97a8"],["Sky","#7fa8c9"],["Periwinkle","#9da7d0"],["Lavender","#a99bb5"],["Sand","#d4a853"],["Rose","#c99aa0"],["Moonlight","#bfc7ce"]];
+let breathDur = 3; const breath = new Audio("/breath-audio"); breath.preload="auto";
+const breathDelay = () => Math.max(0, parseFloat($("breathDelay").value)||0);
+function breathStateAt(t) { const delay=breathDelay(), split=bstate.split, end=breathDur; if (t<delay) return {fill:0,exhale:false}; if (t<split) return {fill:easeInOutCubic(clamp01((t-delay)/Math.max(0.001,split-delay))),exhale:false}; return {fill:1-easeInOutCubic(clamp01((t-split)/Math.max(0.001,end-split))),exhale:true}; }
+function buildSwatches() { const wrap=$("breathSwatches"); const custom=$("breathColor"); wrap.querySelectorAll(".sw").forEach((n)=>n.remove()); CALM.forEach(([name,hex])=>{ const s=document.createElement("div"); s.className="sw"; s.dataset.c=hex; s.title=name; s.style.background=hex; s.addEventListener("click",()=>{ bstate.color=hex; custom.value=hex; syncBreathUI(); }); wrap.insertBefore(s,custom); }); }
+function syncBreathUI() {
+  const c=bstate.color, dur=breathDur||3; const splitPct=clamp01(bstate.split/dur)*100;
+  document.querySelectorAll(".sw").forEach((s)=>s.classList.toggle("sel", s.dataset.c.toLowerCase()===c.toLowerCase()));
+  $("breathInhale").style.width=splitPct+"%"; $("breathInhale").style.background=`linear-gradient(90deg, ${rgbaHex(c,.10)}, ${rgbaHex(c,.32)})`;
+  $("breathHandle").style.left=splitPct+"%"; $("breathSplitOut").textContent=bstate.split.toFixed(1)+"s";
+  $("inhaleLab").textContent=`inhale 0–${bstate.split.toFixed(1)}s`; $("exhaleLab").textContent=`exhale ${bstate.split.toFixed(1)}–${dur.toFixed(1)}s`;
+  $("breathFill").style.background=`linear-gradient(to top, ${c}, ${lightenHex(c,.35)})`; $("breathListen").style.color=c;
+}
+function setSplit(sec) { const dur=breathDur||3; bstate.split=Math.min(Math.max(sec,breathDelay()+0.1),dur-0.1); bstate.splitUserSet=true; syncBreathUI(); }
+breath.addEventListener("loadedmetadata",()=>{ breathDur=breath.duration||3; if(!bstate.splitUserSet) bstate.split=+(breathDur*0.6).toFixed(2); syncBreathUI(); });
+breath.addEventListener("ended",()=>{ $("breathPlay").textContent="▶ Hear breath"; });
+let breathRaf=null, demoT=0, lastTs=0;
+function breathTick(ts) {
+  const dt=lastTs?(ts-lastTs)/1000:0; lastTs=ts; let t;
+  if (!breath.paused) { t=breath.currentTime; const ph=$("breathPlayhead"); ph.hidden=false; ph.style.left=clamp01(t/(breathDur||3))*100+"%"; }
+  else { $("breathPlayhead").hidden=true; demoT+=dt; if (demoT>(breathDur||3)+0.6) demoT=0; t=demoT; }
+  const {fill,exhale}=breathStateAt(t);
+  $("breathFill").style.height=fill*100+"%";
+  $("breathRing").style.boxShadow=`0 0 ${26*fill}px ${rgbaHex(bstate.color,0.5*fill+0.05)}, inset 0 0 20px ${rgbaHex(bstate.color,.18)}`;
+  $("breathRing").style.transform=`scale(${(0.94+fill*0.1).toFixed(3)})`;
+  $("breathListen").style.opacity=exhale?clamp01((t-bstate.split)/0.4):0;
+  breathRaf=requestAnimationFrame(breathTick);
+}
+function startBreath(){ lastTs=0; demoT=0; if(!breathRaf) breathRaf=requestAnimationFrame(breathTick); }
+function stopBreath(){ breath.pause(); $("breathPlay").textContent="▶ Hear breath"; if(breathRaf){ cancelAnimationFrame(breathRaf); breathRaf=null; } }
+function trackToSplit(clientX) { const rect=$("breathTrack").getBoundingClientRect(); setSplit(clamp01((clientX-rect.left)/rect.width)*(breathDur||3)); }
+$("breathTrack").addEventListener("click",(e)=>{ if(e.target===$("breathHandle"))return; trackToSplit(e.clientX); });
+let dragHandle=false;
+$("breathHandle").addEventListener("mousedown",(e)=>{ e.preventDefault(); dragHandle=true; });
+document.addEventListener("mousemove",(e)=>{ if(dragHandle) trackToSplit(e.clientX); });
+document.addEventListener("mouseup",()=>{ dragHandle=false; });
+$("breathPlay").addEventListener("click",()=>{ if(breath.paused){ breath.currentTime=0; breath.play().catch(()=>{}); $("breathPlay").textContent="❚❚ Stop"; } else { breath.pause(); $("breathPlay").textContent="▶ Hear breath"; } });
+$("breathSetSplit").addEventListener("click",()=>setSplit(breath.currentTime||0));
+$("breathDelay").addEventListener("input", syncBreathUI);
+$("breathColor").addEventListener("input",(e)=>{ bstate.color=e.target.value; syncBreathUI(); });
+
+// ---------- review + save ----------
+function renderSummary() {
+  const rec=recitationSeconds();
+  const bg = state.bgMode==="collage" ? `Collage · ${state.verses.length} clips` : `Single · ${state.background}`;
+  const rows = [
+    ["Project", projects.find(p=>p.slug===activeProject)?.name||"—"],
+    ["Range", state.loaded?`${state.surahName} ${$("surah").value}:${$("from").value}–${$("to").value}`:"—"],
+    ["Verses", `${state.verses.length} · ${rec?rec.toFixed(1)+"s":"unmarked"}`],
+    ["Type", `${(FONTS.arabic.find((f)=>f.key===tstate.arabicFont)||{}).label||"?"} ${tstate.arabicFontSize}px · ${(FONTS.latin.find((f)=>f.key===tstate.englishFont)||{}).label||"?"} ${tstate.englishFontSize}px`],
+    ["Breath", `<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${bstate.color};vertical-align:middle"></span> ${bstate.color} · split ${bstate.split.toFixed(1)}s`],
+    ["Background", bg],
+    ["Grade", `blur ${$("bgBlur").value}px · darken ${Math.round((parseFloat($("bgDarken").value)||0)*100)}%`],
+  ];
+  $("summary").innerHTML = rows.map(([k,v])=>`<div class="sum-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+}
+async function save() {
+  const darkness = Math.max(0, parseFloat($("bgDarken").value)||0);
+  const payload = {
+    surahNumber:+$("surah").value, surahName:state.surahName, fromAyah:+$("from").value, toAyah:+$("to").value,
+    videoFile:state.recitationFile, useVideoAsBackground:false,
+    bgMode:state.bgMode, backgroundFile:state.background, bgCollage:state.collage.slice(),
+    fadeInSeconds:Math.max(0,parseFloat($("fadeIn").value)||0), fadeOutSeconds:Math.max(0,parseFloat($("fadeOut").value)||0),
+    bgBlur:Math.max(0,parseFloat($("bgBlur").value)||0), bgDarken:1-darkness, bgSaturation:0.7,
+    bgFadeInSeconds:Math.max(0,parseFloat($("bgFadeIn").value)||0), bgFadeOutSeconds:Math.max(0,parseFloat($("bgFadeOut").value)||0),
+    bgFit:state.bgFit, bgLoopStyle:state.bgLoopStyle,
+    breathColor:bstate.color, breathInEndSeconds:+bstate.split.toFixed(2), breathStartDelaySeconds:breathDelay(),
+    arabicFont:tstate.arabicFont, englishFont:tstate.englishFont,
+    arabicFontSize:tstate.arabicFontSize, englishFontSize:tstate.englishFontSize,
+    safeTop:tstate.safeTop, safeRight:tstate.safeRight, safeBottom:tstate.safeBottom, safeLeft:tstate.safeLeft,
+    accent:bstate.color, append:$("append").checked,
+    boundaries:state.boundaries.map((b)=>Math.round(b)), verses:state.verses,
+  };
+  const btn=$("saveBtn"); const lab=btn.textContent; btn.disabled=true; btn.textContent="Baking…";
+  setStatus("Baking background — this can take a moment…");
+  try {
+    const j = await api("/api/save", payload);
+    const pacing = j.pacing?` · ${j.pacing}`:"";
+    setStatus(`✓ Saved ${j.entry} to “${j.project}”${pacing}. Reload Studio to view.`, "ok");
+    await loadSavedProps(false); await loadProjects();
+  } catch (e) { setStatus("Save failed: "+e.message, "err"); }
+  finally { btn.disabled=false; btn.textContent=lab; render(); }
+}
+$("saveBtn").addEventListener("click", save);
+
+// ---------- open saved ----------
+async function loadSavedProps(autoOpenLast) {
+  try { const r=await fetch("/api/props"); const j=await r.json(); savedEntries=Array.isArray(j.entries)?j.entries:[]; } catch { savedEntries=[]; }
+  const sel=$("propsSel"); sel.innerHTML='<option value="">— new —</option>';
+  savedEntries.forEach((e,i)=>{ const o=document.createElement("option"); o.value=String(i); o.textContent=`${e.surahNumber}:${e.fromAyah}–${e.toAyah} · ${e.surahName||""}`; sel.appendChild(o); });
+  if (autoOpenLast && savedEntries.length) { sel.value=String(savedEntries.length-1); openSaved(savedEntries.length-1); }
+}
+async function openSaved(index) {
+  const e = savedEntries[index]; if (!e) return;
+  $("surah").value=String(e.surahNumber); populateVerseDropdowns(); $("from").value=String(e.fromAyah); $("to").value=String(e.toAyah);
+  const start=e.recitationStartMs||0; const verses=e.verses||[];
+  state.verses=verses.map((v)=>({ayahNumber:v.ayahNumber,arabic:v.arabic,translation:v.translation}));
+  state.surahName=e.surahName||""; state.boundaries=verses.map((v)=>start+v.fromMs); if(verses.length) state.boundaries.push(start+verses[verses.length-1].toMs);
+  state.selected=null; state.loaded=true;
+  $("fadeIn").value=e.fadeInSeconds!=null?e.fadeInSeconds:2; $("fadeOut").value=e.fadeOutSeconds!=null?e.fadeOutSeconds:1;
+  $("bgBlur").value=e.bgBlur!=null?e.bgBlur:2.5; $("bgDarken").value=e.bgDarken!=null?(1-e.bgDarken).toFixed(2):0.38;
+  $("bgFadeIn").value=e.bgFadeInSeconds!=null?e.bgFadeInSeconds:0.9; $("bgFadeOut").value=e.bgFadeOutSeconds!=null?e.bgFadeOutSeconds:1;
+  state.bgFit=e.bgFit==="stretch"?"stretch":"natural"; state.bgLoopStyle=["crossfade","boomerang","hard"].includes(e.bgLoopStyle)?e.bgLoopStyle:"crossfade";
+  // background mode
+  state.bgMode = e.bgMode==="collage"?"collage":"single";
+  document.querySelectorAll("#bgModeSeg .seg-btn").forEach((b)=>b.classList.toggle("on", b.dataset.mode===state.bgMode));
+  $("bgSingle").style.display=state.bgMode==="single"?"":"none"; $("bgCollage").style.display=state.bgMode==="collage"?"":"none"; $("paceBlock").style.display=state.bgMode==="single"?"":"none";
+  state.collage = Array.isArray(e.bgCollage)&&e.bgCollage.length===verses.length ? e.bgCollage.slice() : verses.map(()=>pickRandomBg());
+  applyGrade();
+  // breath
+  bstate.color=e.breathColor||e.accent||"#6fb3a8"; $("breathColor").value=bstate.color;
+  $("breathDelay").value=e.breathStartDelaySeconds!=null?e.breathStartDelaySeconds:0.5;
+  if (e.breathInEndSeconds!=null) { bstate.split=e.breathInEndSeconds; bstate.splitUserSet=true; }
+  syncBreathUI();
+  // typography
+  tstate.arabicFont = FONT_CSS.arabic[e.arabicFont] ? e.arabicFont : "scheherazade";
+  tstate.englishFont = FONT_CSS.latin[e.englishFont] ? e.englishFont : "cormorant";
+  tstate.arabicFontSize = Number.isFinite(e.arabicFontSize) ? e.arabicFontSize : 64;
+  tstate.englishFontSize = Number.isFinite(e.englishFontSize) ? e.englishFontSize : 26;
+  tstate.safeTop = Number.isFinite(e.safeTop) ? e.safeTop : 130;
+  tstate.safeRight = Number.isFinite(e.safeRight) ? e.safeRight : 150;
+  tstate.safeBottom = Number.isFinite(e.safeBottom) ? e.safeBottom : 340;
+  tstate.safeLeft = Number.isFinite(e.safeLeft) ? e.safeLeft : 48;
+  syncTypeUI();
+  const bgRaw=e.bgSource||baseName(e.backgroundSrc); if (bgRaw) selectBackground(bgRaw);
+  renderVerses(); buildCollage(); render(); updatePaceUI(); updateTypePreview();
+  await refreshRecitations(baseName(e.recitationSrc));
+  setStatus(`Loaded saved ${e.surahNumber}:${e.fromAyah}–${e.toAyah}. Adjust and re-save.`, "ok");
+  goStep("mark");
+}
+$("propsSel").addEventListener("change",(ev)=>{ const v=ev.target.value; if (v==="") return; openSaved(+v); });
+
+// boot
+(async () => {
+  buildSwatches(); syncBreathUI();
+  buildFontPickers(); syncTypeUI();
+  await loadSurahs();
+  await loadProjects();
+  await loadBackgrounds();
+  await loadSavedProps(false);
+  await refreshRecitations();
+  applyGrade();
+  goStep("source");
+  tick();
+})();
+</script>
+</body>
+</html>

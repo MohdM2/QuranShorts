@@ -1,0 +1,23 @@
+node_modules/
+out/
+dist/
+build/
+.cache/
+*.log
+
+# Local media assets — large, regenerated/downloaded, kept out of git.
+# (backgrounds, baked renders, downloaded recitations, breath audio, etc.)
+public/media/
+public/audio/
+public/video/
+
+# Belt-and-suspenders: never commit raw media or secrets anywhere.
+*.mp4
+*.mov
+*.mp3
+*.wav
+*.m4a
+.env
+.env.*
+cookies.txt
+*.key

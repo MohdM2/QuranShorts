@@ -1,0 +1,13 @@
+{
+  "active": "al-emran",
+  "projects": [
+    {
+      "slug": "faatir",
+      "name": "Faatir"
+    },
+    {
+      "slug": "al-emran",
+      "name": "Al Emran"
+    }
+  ]
+}

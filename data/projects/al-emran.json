@@ -1,0 +1,98 @@
+[
+  {
+    "surahName": "Aal-i-Imraan",
+    "surahNumber": 3,
+    "fromAyah": 190,
+    "toAyah": 195,
+    "reciter": "Mishary Rashid Alafasy",
+    "recitationSrc": "media/recitations/yt_MHIVwPqXGBo.mp4",
+    "recitationStartMs": 4292609,
+    "fadeInSeconds": 2,
+    "fadeOutSeconds": 1,
+    "verses": [
+      {
+        "ayahNumber": 190,
+        "arabic": "إِنَّ فِى خَلْقِ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضِ وَٱخْتِلَٰفِ ٱلَّيْلِ وَٱلنَّهَارِ لَءَايَٰتٍۢ لِّأُو۟لِى ٱلْأَلْبَٰبِ",
+        "translation": "Indeed, in the creation of the heavens and the earth and the alternation of the night and the day are signs for those of understanding.",
+        "fromMs": 0,
+        "toMs": 13752
+      },
+      {
+        "ayahNumber": 191,
+        "arabic": "ٱلَّذِينَ يَذْكُرُونَ ٱللَّهَ قِيَٰمًۭا وَقُعُودًۭا وَعَلَىٰ جُنُوبِهِمْ وَيَتَفَكَّرُونَ فِى خَلْقِ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضِ رَبَّنَا مَا خَلَقْتَ هَٰذَا بَٰطِلًۭا سُبْحَٰنَكَ فَقِنَا عَذَابَ ٱلنَّارِ",
+        "translation": "Who remember Allah while standing or sitting or [lying] on their sides and give thought to the creation of the heavens and the earth, [saying], \"Our Lord, You did not create this aimlessly; exalted are You [above such a thing]; then protect us from the punishment of the Fire.",
+        "fromMs": 13752,
+        "toMs": 43299
+      },
+      {
+        "ayahNumber": 192,
+        "arabic": "رَبَّنَآ إِنَّكَ مَن تُدْخِلِ ٱلنَّارَ فَقَدْ أَخْزَيْتَهُۥ ۖ وَمَا لِلظَّٰلِمِينَ مِنْ أَنصَارٍۢ",
+        "translation": "Our Lord, indeed whoever You admit to the Fire - You have disgraced him, and for the wrongdoers there are no helpers.",
+        "fromMs": 43299,
+        "toMs": 57927
+      },
+      {
+        "ayahNumber": 193,
+        "arabic": "رَّبَّنَآ إِنَّنَا سَمِعْنَا مُنَادِيًۭا يُنَادِى لِلْإِيمَٰنِ أَنْ ءَامِنُوا۟ بِرَبِّكُمْ فَـَٔامَنَّا ۚ رَبَّنَا فَٱغْفِرْ لَنَا ذُنُوبَنَا وَكَفِّرْ عَنَّا سَيِّـَٔاتِنَا وَتَوَفَّنَا مَعَ ٱلْأَبْرَارِ",
+        "translation": "Our Lord, indeed we have heard a caller calling to faith, [saying], 'Believe in your Lord,' and we have believed. Our Lord, so forgive us our sins and remove from us our misdeeds and cause us to die with the righteous.",
+        "fromMs": 57927,
+        "toMs": 91874
+      },
+      {
+        "ayahNumber": 194,
+        "arabic": "رَبَّنَا وَءَاتِنَا مَا وَعَدتَّنَا عَلَىٰ رُسُلِكَ وَلَا تُخْزِنَا يَوْمَ ٱلْقِيَٰمَةِ ۗ إِنَّكَ لَا تُخْلِفُ ٱلْمِيعَادَ",
+        "translation": "Our Lord, and grant us what You promised us through Your messengers and do not disgrace us on the Day of Resurrection. Indeed, You do not fail in [Your] promise.\"",
+        "fromMs": 91874,
+        "toMs": 109297
+      },
+      {
+        "ayahNumber": 195,
+        "arabic": "فَٱسْتَجَابَ لَهُمْ رَبُّهُمْ أَنِّى لَآ أُضِيعُ عَمَلَ عَٰمِلٍۢ مِّنكُم مِّن ذَكَرٍ أَوْ أُنثَىٰ ۖ بَعْضُكُم مِّنۢ بَعْضٍۢ ۖ فَٱلَّذِينَ هَاجَرُوا۟ وَأُخْرِجُوا۟ مِن دِيَٰرِهِمْ وَأُوذُوا۟ فِى سَبِيلِى وَقَٰتَلُوا۟ وَقُتِلُوا۟ لَأُكَفِّرَنَّ عَنْهُمْ سَيِّـَٔاتِهِمْ وَلَأُدْخِلَنَّهُمْ جَنَّٰتٍۢ تَجْرِى مِن تَحْتِهَا ٱلْأَنْهَٰرُ ثَوَابًۭا مِّنْ عِندِ ٱللَّهِ ۗ وَٱللَّهُ عِندَهُۥ حُسْنُ ٱلثَّوَابِ",
+        "translation": "And their Lord responded to them, \"Never will I allow to be lost the work of [any] worker among you, whether male or female; you are of one another. So those who emigrated or were evicted from their homes or were harmed in My cause or fought or were killed - I will surely remove from them their misdeeds, and I will surely admit them to gardens beneath which rivers flow as reward from Allah, and Allah has with Him the best reward.\"",
+        "fromMs": 109297,
+        "toMs": 162470
+      }
+    ],
+    "arabicFont": "amiri-quran",
+    "englishFont": "cormorant",
+    "arabicFontSize": 52,
+    "englishFontSize": 30,
+    "safeTop": 130,
+    "safeRight": 150,
+    "safeBottom": 340,
+    "safeLeft": 48,
+    "backgroundSrc": "media/baked/baked_003_190-195.mp4",
+    "backgroundBaked": true,
+    "bgMode": "collage",
+    "bgSource": "pexels_10994518.mp4",
+    "bgCollage": [
+      "pexels_29579927.mp4",
+      "pexels_37806182.mp4",
+      "pexels_36197739.mp4",
+      "pexels_36600222.mp4",
+      "pexels_38005763.mp4",
+      "pexels_34912709.mp4"
+    ],
+    "bgBlur": 1.5,
+    "bgDarken": 0.5,
+    "bgSaturation": 0.7,
+    "bgFadeInSeconds": 1,
+    "bgFadeOutSeconds": 1,
+    "bgFit": "natural",
+    "bgLoopStyle": "crossfade",
+    "useVideoAsBackground": false,
+    "breathSrc": "media/breaths/breath.mp3",
+    "hookText": "Take a breath",
+    "hookSubText": "and listen",
+    "hookTextAr": "خُذ نَفَسًا",
+    "hookSubTextAr": "وَأنصِت",
+    "breathColor": "#a99bb5",
+    "breathInEndSeconds": 3.87,
+    "breathStartDelaySeconds": 0.5,
+    "hookDurationInSeconds": 6.5,
+    "showProgressBar": true,
+    "showTimerRing": true,
+    "tailPaddingInSeconds": 1.5,
+    "accent": "#a99bb5"
+  }
+]
