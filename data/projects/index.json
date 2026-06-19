@@ -1,5 +1,5 @@
 {
-  "active": "al-emran",
+  "active": "al-zomar",
   "projects": [
     {
       "slug": "faatir",
@@ -8,6 +8,10 @@
     {
       "slug": "al-emran",
       "name": "Al Emran"
+    },
+    {
+      "slug": "al-zomar",
+      "name": "Al Zomar"
     }
   ]
 }

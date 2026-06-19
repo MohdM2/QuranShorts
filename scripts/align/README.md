@@ -37,10 +37,13 @@ The composer auto-detects `.venv/Scripts/python.exe` (Windows) / `.venv/bin/pyth
 
 ## How to use (in the composer)
 
-In the **Mark** step: mark only the **first** boundary (range start) and the
-**last** (range end), then click **✨ Auto-align verses**. Toggle *"Show
-sentence-by-sentence"* for phrase mode. Nudge any boundary afterward with
-`← →` + `U` — alignment proposes, you stay in control.
+In the **Mark** step: drop just the **first** boundary (range start) and the
+**last** (range end) — a little **wide** is fine — then click **✨ Auto-align
+verses**. It fills the interior cuts *and* **trims the start/end in to the actual
+voice** (leading/trailing silence dropped, always staying inside your two marks;
+a short lead/tail pad is kept so onsets and final elongations aren't clipped).
+Toggle *"Show sentence-by-sentence"* for phrase mode. Nudge any boundary
+afterward with `← →` + `U` — alignment proposes, you stay in control.
 
 ## Accuracy (measured)
 

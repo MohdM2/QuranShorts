@@ -435,7 +435,7 @@
               <span class="sec-lab">Auto-align ✦ beta</span>
               <button id="alignBtn" class="btn-gold" title="Detect verse boundaries from the audio">✨ Auto-align verses</button>
             </div>
-            <div class="note" style="margin-top:6px">Mark just the <b>first</b> boundary (range start) and the <b>last</b> (range end), then Auto-align matches the recitation to the verse text and fills the rest — and splits each verse into timed sentences.</div>
+            <div class="note" style="margin-top:6px">Mark the <b>first</b> boundary (range start) and the <b>last</b> (range end) — <b>both required</b>; a little <b>wide</b> is fine, but keep them near the verses (don't include whole neighbouring ayat). Auto-align matches the recitation to the verse text, fills the rest, <b>trims the start/end in to the actual voice</b>, and splits each verse into timed sentences.</div>
             <label class="row" style="gap:8px;align-items:center;margin-top:8px;cursor:pointer"><input type="checkbox" id="phraseMode" /> <span>Show sentence-by-sentence (waqf phrases) instead of whole verses</span></label>
             <div class="note" id="alignStatus" style="margin-top:6px"></div>
           </div>
@@ -675,6 +675,7 @@ FONTS.arabic.forEach((f)=>FONT_CSS.arabic[f.key]=f.css);
 FONTS.latin.forEach((f)=>FONT_CSS.latin[f.key]=f.css);
 const TYPE_SAMPLE = { arabic:"بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", translation:"In the name of Allah, the Entirely Merciful, the Especially Merciful." };
 let bgFiles = [], savedEntries = [], projects = [], activeProject = null;
+let prefs = {}; // last-used look & feel (data/defaults.json), seeded on boot
 const bgDurations = {}; // filename -> seconds, probed from each clip's metadata
 
 // ---------- helpers ----------
@@ -881,9 +882,17 @@ async function autoAlign() {
   if (!state.loaded || !state.verses.length) { alignStatus("Load a verse range first.","err"); return; }
   if (!state.recitationFile) { alignStatus("No recitation source selected.","err"); return; }
   const n = state.boundaries.length; // verses + 1
-  const startMs = state.boundaries[0]!=null ? state.boundaries[0] : 0;
-  const endMs = state.boundaries[n-1]!=null ? state.boundaries[n-1] : (video.duration ? video.duration*1000 : 0);
-  if (!(endMs > startMs)) { alignStatus("Mark the range start (first boundary) and end (last) first.","err"); return; }
+  // The two outer marks are MANDATORY — they bracket the search. Without them we
+  // used to fall back to the whole clip, and forced alignment smears the first/
+  // last verse across all the non-target audio (entire-clip test: 159s phrases).
+  // No silent whole-clip run.
+  const startMs = state.boundaries[0];
+  const endMs = state.boundaries[n-1];
+  if (startMs==null || endMs==null) {
+    alignStatus("Mark the range START (first boundary) and END (last) first — both are required to bracket the search. Ctrl+Space at each.","err");
+    return;
+  }
+  if (!(endMs > startMs)) { alignStatus("Range end must come after the start.","err"); return; }
   const btn=$("alignBtn"); const lab=btn.textContent; btn.disabled=true; btn.textContent="Aligning…";
   alignStatus("Aligning… first run downloads the model (~1GB) and can take a minute.");
   try {
@@ -898,7 +907,10 @@ async function autoAlign() {
     state.selected = null;
     const d = j.diagnostics || {};
     const warn = d.lowScore ? ` · ${d.lowScore} low-confidence word(s) — check the edges` : "";
-    alignStatus(`✓ Aligned ${d.words||0} words across ${state.verses.length} verses${warn}. Nudge any boundary with ← → then U.`, "ok");
+    const trim = (d.trimmedLeadMs || d.trimmedTailMs)
+      ? ` · trimmed ${((d.trimmedLeadMs||0)/1000).toFixed(1)}s lead / ${((d.trimmedTailMs||0)/1000).toFixed(1)}s tail`
+      : "";
+    alignStatus(`✓ Aligned ${d.words||0} words across ${state.verses.length} verses${trim}${warn}. Nudge any boundary with ← → then U.`, "ok");
     renderVerses(); render();
   } catch (e) { alignStatus("Align failed: "+e.message, "err"); }
   finally { btn.disabled=false; btn.textContent=lab; }
@@ -945,6 +957,10 @@ function render() {
   const all = state.boundaries.length && state.boundaries.every((b)=>b!=null);
   const asc = all && state.boundaries.every((b,i)=>i===0||b>state.boundaries[i-1]);
   $("saveBtn").disabled = !(all && asc);
+  // Auto-align needs both outer marks (mandatory) — gate the button on them so
+  // there's no way to launch a whole-clip alignment by accident.
+  const ab = $("alignBtn");
+  if (ab) ab.disabled = !(state.boundaries.length && state.boundaries[0]!=null && state.boundaries[state.boundaries.length-1]!=null);
 }
 function tick(){ render(); requestAnimationFrame(tick); }
 video.addEventListener("play",()=>{ $("playBtn").textContent="❚❚ Pause"; });
@@ -1307,6 +1323,42 @@ async function save() {
 }
 $("saveBtn").addEventListener("click", save);
 
+// ---------- defaults (last-used look & feel) ----------
+// Apply persisted prefs to the styling/timing controls so a fresh project starts
+// from "whatever I used last". Never touches content (range, recitation, marks).
+function seedFromPrefs(p) {
+  if (!p || typeof p !== "object") return;
+  const num = (v) => typeof v === "number" && isFinite(v);
+  // breath
+  const col = (typeof p.breathColor === "string" && p.breathColor) ? p.breathColor
+            : (typeof p.accent === "string" && p.accent) ? p.accent : null;
+  if (col) { bstate.color = col; $("breathColor").value = col; }
+  if (num(p.breathInEndSeconds)) { bstate.split = p.breathInEndSeconds; bstate.splitUserSet = true; }
+  if (num(p.breathStartDelaySeconds)) $("breathDelay").value = p.breathStartDelaySeconds;
+  // typography
+  if (FONT_CSS.arabic[p.arabicFont]) tstate.arabicFont = p.arabicFont;
+  if (FONT_CSS.latin[p.englishFont]) tstate.englishFont = p.englishFont;
+  if (num(p.arabicFontSize)) tstate.arabicFontSize = p.arabicFontSize;
+  if (num(p.englishFontSize)) tstate.englishFontSize = p.englishFontSize;
+  if (num(p.safeTop)) tstate.safeTop = p.safeTop;
+  if (num(p.safeRight)) tstate.safeRight = p.safeRight;
+  if (num(p.safeBottom)) tstate.safeBottom = p.safeBottom;
+  if (num(p.safeLeft)) tstate.safeLeft = p.safeLeft;
+  // fades / delays
+  if (num(p.fadeInSeconds)) $("fadeIn").value = p.fadeInSeconds;
+  if (num(p.fadeOutSeconds)) $("fadeOut").value = p.fadeOutSeconds;
+  if (num(p.bgFadeInSeconds)) $("bgFadeIn").value = p.bgFadeInSeconds;
+  if (num(p.bgFadeOutSeconds)) $("bgFadeOut").value = p.bgFadeOutSeconds;
+  // background grade (UI input holds darkness = 1 - bgDarken)
+  if (num(p.bgBlur)) $("bgBlur").value = p.bgBlur;
+  if (num(p.bgDarken)) $("bgDarken").value = (1 - p.bgDarken).toFixed(2);
+  syncBreathUI(); syncTypeUI(); applyGrade();
+}
+async function loadDefaults() {
+  try { const r = await fetch("/api/defaults"); prefs = (await r.json()) || {}; } catch { prefs = {}; }
+  seedFromPrefs(prefs);
+}
+
 // ---------- open saved ----------
 async function loadSavedProps(autoOpenLast) {
   try { const r=await fetch("/api/props"); const j=await r.json(); savedEntries=Array.isArray(j.entries)?j.entries:[]; } catch { savedEntries=[]; }
@@ -1359,6 +1411,7 @@ $("propsSel").addEventListener("change",(ev)=>{ const v=ev.target.value; if (v==
 (async () => {
   buildSwatches(); syncBreathUI();
   buildFontPickers(); syncTypeUI();
+  await loadDefaults(); // restore last-used look & feel before anything opens
   await loadSurahs();
   await loadProjects();
   await loadBackgrounds();

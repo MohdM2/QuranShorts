@@ -36,6 +36,7 @@ const DATA_DIR = join(ROOT, "data");
 const PROJECTS_DIR = join(DATA_DIR, "projects");
 const INDEX_PATH = join(PROJECTS_DIR, "index.json");
 const PROPS_PATH = join(DATA_DIR, "props.json");
+const DEFAULTS_PATH = join(DATA_DIR, "defaults.json");
 const CACHE_DIR = join(DATA_DIR, ".cache");
 // Forced-alignment sidecar (isolated Python 3.12 venv — torch has no wheels for
 // the repo's Python 3.14). See scripts/align/requirements.txt for setup.
@@ -239,6 +240,23 @@ async function mirrorActive() {
   const entries = ix.active ? await readProject(ix.active) : [];
   await writeFile(PROPS_PATH, JSON.stringify(entries, null, 2) + "\n");
   return entries;
+}
+
+// Look & feel that should carry over to the next project so the user never
+// re-enters it. Content (range, recitation, boundaries, background clip) is
+// deliberately excluded — only styling/timing prefs persist.
+const DEFAULT_KEYS = [
+  "breathColor", "breathInEndSeconds", "breathStartDelaySeconds", "accent",
+  "arabicFont", "englishFont", "arabicFontSize", "englishFontSize",
+  "safeTop", "safeRight", "safeBottom", "safeLeft",
+  "bgBlur", "bgDarken", "bgFadeInSeconds", "bgFadeOutSeconds",
+  "fadeInSeconds", "fadeOutSeconds",
+];
+// Snapshot the just-saved entry's prefs as the defaults for the next project.
+async function writeDefaults(entry) {
+  const d = {};
+  for (const k of DEFAULT_KEYS) if (entry[k] !== undefined) d[k] = entry[k];
+  await writeFile(DEFAULTS_PATH, JSON.stringify(d, null, 2) + "\n");
 }
 
 // Bake a chosen clip into a graded, paced background: cover-fit to 1080x1920,
@@ -532,6 +550,10 @@ const server = createServer(async (req, res) => {
     }
 
     // Project list + the active project's saved videos (track/verses/marks).
+    // Last-used look & feel, so a fresh/new project can default to it.
+    if (path === "/api/defaults" && req.method === "GET") {
+      return json(res, 200, await readJson(DEFAULTS_PATH, {}));
+    }
     if (path === "/api/projects" && req.method === "GET") {
       const ix = await readIndex();
       const projects = await Promise.all(
@@ -639,11 +661,15 @@ const server = createServer(async (req, res) => {
     }
 
     // Forced-align the known verse text to the recitation audio so the user
-    // doesn't mark boundaries by hand. The user marks only the range start
-    // (startMs) and end (endMs); we align everything in between and also return
-    // per-verse waqf phrases with their own timing (for sentence-by-sentence
-    // display). Boundaries come back absolute (source ms); phrase times are
-    // relative to startMs (== the range start the save path uses as base).
+    // doesn't mark boundaries by hand. The user brackets the range with two
+    // ROUGH outer marks (startMs/endMs, a little wide); we align everything in
+    // between, place interior cuts at the silence midpoints, and TRIM the outer
+    // marks in to the actual voice (first word..last word, ± a short pad) so
+    // leading/trailing silence is dropped. We only ever read audio inside the
+    // marked window — never outside it. We also return per-verse waqf phrases
+    // with their own timing (for sentence-by-sentence display). Boundaries come
+    // back absolute (source ms); phrase times are relative to boundaries[0]
+    // (the trimmed start == the range start the save path uses as base).
     if (path === "/api/align" && req.method === "POST") {
       const body = JSON.parse(await readBody(req));
       const { recitationFile, verses } = body;
@@ -680,16 +706,43 @@ const server = createServer(async (req, res) => {
         const aligned = JSON.parse(await readFile(outJson, "utf-8"));
         const mapped = mapTimings(verses, tok, aligned.words);
 
-        const boundaries = [s, ...mapped.interior.map((m) => s + m), e];
+        // Trim the rough outer marks in to the actual voice. Start a short lead
+        // before the first aligned word so its onset isn't clipped; end a longer
+        // tail after the last word so a final elongation rings out. Both clamp
+        // inside the marked window [s, e] — we never invent audio outside it.
+        const LEAD_PAD = 150; // ms kept before the first word
+        const TAIL_PAD = 300; // ms kept after the last word (madd ring-out)
+        const winLen = e - s;
+        const firstWordRel = mapped.verses[0].startMs; // rel to window start s
+        const lastWordRel = mapped.verses[mapped.verses.length - 1].endMs; // rel to s
+        const trimStart = Math.max(0, Math.round(firstWordRel - LEAD_PAD)); // rel, >= 0
+        const trimEnd = Math.min(winLen, Math.round(lastWordRel + TAIL_PAD)); // rel, <= winLen
+        const startAbs = s + trimStart;
+        const endAbs = s + trimEnd;
+
+        // Boundaries absolute (source ms); interior gaps are already rel to s.
+        const boundaries = [startAbs, ...mapped.interior.map((m) => s + m), endAbs];
+        // Re-base phrase times from window-relative (rel to s) to range-relative
+        // (rel to startAbs == boundaries[0], the base the save path subtracts).
         const outVerses = mapped.verses.map((v) => ({
           ayahNumber: v.ayahNumber,
-          phrases: v.phrases.map((p) => ({ text: p.text, fromMs: p.startMs, toMs: p.endMs })),
+          phrases: v.phrases.map((p) => ({
+            text: p.text,
+            fromMs: p.startMs - trimStart,
+            toMs: p.endMs - trimStart,
+          })),
         }));
         const lowScore = aligned.words.filter((w) => w.placeholder || w.score < 0.3).length;
         return json(res, 200, {
           boundaries,
           verses: outVerses,
-          diagnostics: { audioMs: aligned.audioMs, words: aligned.words.length, lowScore },
+          diagnostics: {
+            audioMs: aligned.audioMs,
+            words: aligned.words.length,
+            lowScore,
+            trimmedLeadMs: trimStart, // silence trimmed off the front
+            trimmedTailMs: winLen - trimEnd, // silence trimmed off the back
+          },
         });
       } catch (err) {
         return json(res, 502, { error: `alignment failed: ${err.message}` });
@@ -972,6 +1025,8 @@ const server = createServer(async (req, res) => {
       all.push(entry);
       await writeProject(ix.active, all);
       await mirrorActive();
+      // Remember this entry's styling/timing as defaults for the next project.
+      await writeDefaults(entry).catch(() => {});
       return json(res, 200, {
         ok: true,
         count: all.length,

@@ -156,7 +156,7 @@ export const AyahVideo: React.FC<CompositionProps> = (props) => {
           showTimerRing={props.showTimerRing}
           accent={props.accent}
           safeTop={props.safeTop}
-          safeLeft={props.safeLeft}
+          safeRight={props.safeRight}
         />
       </Sequence>
     </div>

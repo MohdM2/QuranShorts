@@ -8,21 +8,21 @@ type Props = {
   showTimerRing: boolean;
   accent: string;
   safeTop?: number;
-  safeLeft?: number;
+  safeRight?: number;
 };
 
 // Progress indicator. We deliberately render only the timer ring: Instagram
 // Reels and TikTok both draw their own seek bar across the bottom, so a second
 // bottom bar of ours was redundant and was buried under the caption anyway. The
-// ring lives in the top-left safe corner, clear of the top tabs/search and the
-// right action rail.
+// ring lives in the top-right safe corner — inset by safeRight so it sits just
+// inboard of the action rail (like/comment/share) and below the top tabs.
 export const ProgressTimer: React.FC<Props> = ({
   recitationStartFrame,
   recitationDurationFrames,
   showTimerRing,
   accent,
   safeTop,
-  safeLeft,
+  safeRight,
 }) => {
   const frame = useCurrentFrame();
 
@@ -32,32 +32,35 @@ export const ProgressTimer: React.FC<Props> = ({
   if (!showTimerRing) return null;
 
   const top = safeTop ?? SAFE_AREA.top;
-  const left = safeLeft ?? SAFE_AREA.left;
-  const circumference = 2 * Math.PI * 22;
+  const right = safeRight ?? SAFE_AREA.right;
+  const size = 64; // a touch larger than before (was 52)
+  const c = size / 2;
+  const r = 26;
+  const stroke = 4; // solid, bold ring (was a thin 2px line)
+  const circumference = 2 * Math.PI * r;
 
   return (
-    <div style={{ position: "absolute", top, left }}>
-      <svg width={52} height={52} viewBox="0 0 52 52">
+    <div style={{ position: "absolute", top, right }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <circle
-          cx={26}
-          cy={26}
-          r={22}
+          cx={c}
+          cy={c}
+          r={r}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
-          strokeWidth={2}
+          stroke="rgba(255,255,255,0.15)"
+          strokeWidth={stroke}
         />
         <circle
-          cx={26}
-          cy={26}
-          r={22}
+          cx={c}
+          cy={c}
+          r={r}
           fill="none"
           stroke={accent}
-          strokeWidth={2}
+          strokeWidth={stroke}
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - progress)}
           strokeLinecap="round"
-          transform="rotate(-90 26 26)"
-          opacity={0.8}
+          transform={`rotate(-90 ${c} ${c})`}
         />
       </svg>
     </div>

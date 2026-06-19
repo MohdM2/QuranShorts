@@ -1,0 +1,20 @@
+{
+  "breathColor": "#d4a853",
+  "breathInEndSeconds": 3.21,
+  "breathStartDelaySeconds": 0.5,
+  "accent": "#d4a853",
+  "arabicFont": "amiri-quran",
+  "englishFont": "cormorant",
+  "arabicFontSize": 64,
+  "englishFontSize": 35,
+  "safeTop": 160,
+  "safeRight": 180,
+  "safeBottom": 340,
+  "safeLeft": 180,
+  "bgBlur": 1.5,
+  "bgDarken": 0.56,
+  "bgFadeInSeconds": 1,
+  "bgFadeOutSeconds": 1,
+  "fadeInSeconds": 1,
+  "fadeOutSeconds": 1
+}
