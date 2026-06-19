@@ -431,6 +431,15 @@
         <div class="step-panel" data-panel="mark">
           <div class="note">Play in the stage and tap <b>Space</b>… actually <b>Ctrl+Space</b> (or ◆ Add marker) at each verse start, then once more at the end of the last verse. Fine-tune with <b>← →</b> and <b>U</b>.</div>
           <div class="group">
+            <div class="type-head">
+              <span class="sec-lab">Auto-align ✦ beta</span>
+              <button id="alignBtn" class="btn-gold" title="Detect verse boundaries from the audio">✨ Auto-align verses</button>
+            </div>
+            <div class="note" style="margin-top:6px">Mark just the <b>first</b> boundary (range start) and the <b>last</b> (range end), then Auto-align matches the recitation to the verse text and fills the rest — and splits each verse into timed sentences.</div>
+            <label class="row" style="gap:8px;align-items:center;margin-top:8px;cursor:pointer"><input type="checkbox" id="phraseMode" /> <span>Show sentence-by-sentence (waqf phrases) instead of whole verses</span></label>
+            <div class="note" id="alignStatus" style="margin-top:6px"></div>
+          </div>
+          <div class="group">
             <span class="sec-lab">Voice fade</span>
             <div class="fade-ctl">
               <span class="fade-seg"><span class="fade-ico">↗</span> in <input type="number" id="fadeIn" min="0" max="10" step="0.1" value="2" /> s</span>
@@ -635,7 +644,7 @@ const STEPS = ["source","mark","type","breath","bg","review"];
 
 const state = {
   verses: [], boundaries: [], selected: null, surahName: "", loaded: false,
-  recitationFile: "", step: "source",
+  recitationFile: "", step: "source", phraseMode: false,
   bgMode: "single", background: "bg.mp4", bgFit: "natural", bgLoopStyle: "crossfade",
   clipDur: 0, collage: [],
 };
@@ -865,6 +874,37 @@ $("stepF").addEventListener("click", ()=>stepFrames(1));
 $("markBtn").addEventListener("click", mark);
 $("updateBtn").addEventListener("click", updateSelected);
 $("clearBtn").addEventListener("click", clearSelected);
+
+// ---------- auto-align (forced alignment) ----------
+function alignStatus(msg, kind) { const el=$("alignStatus"); if(!el) return; el.textContent=msg; el.style.color = kind==="err" ? "var(--err,#e88)" : kind==="ok" ? "var(--gold)" : ""; }
+async function autoAlign() {
+  if (!state.loaded || !state.verses.length) { alignStatus("Load a verse range first.","err"); return; }
+  if (!state.recitationFile) { alignStatus("No recitation source selected.","err"); return; }
+  const n = state.boundaries.length; // verses + 1
+  const startMs = state.boundaries[0]!=null ? state.boundaries[0] : 0;
+  const endMs = state.boundaries[n-1]!=null ? state.boundaries[n-1] : (video.duration ? video.duration*1000 : 0);
+  if (!(endMs > startMs)) { alignStatus("Mark the range start (first boundary) and end (last) first.","err"); return; }
+  const btn=$("alignBtn"); const lab=btn.textContent; btn.disabled=true; btn.textContent="Aligning…";
+  alignStatus("Aligning… first run downloads the model (~1GB) and can take a minute.");
+  try {
+    const j = await api("/api/align", {
+      recitationFile: state.recitationFile,
+      startMs: Math.round(startMs), endMs: Math.round(endMs),
+      verses: state.verses.map((v)=>({ ayahNumber:v.ayahNumber, arabic:v.arabic, translation:v.translation })),
+    });
+    state.boundaries = j.boundaries.slice();
+    const byAyah = {}; (j.verses||[]).forEach((v)=>{ byAyah[v.ayahNumber]=v.phrases||[]; });
+    state.verses.forEach((v)=>{ v.phrases = byAyah[v.ayahNumber] || []; });
+    state.selected = null;
+    const d = j.diagnostics || {};
+    const warn = d.lowScore ? ` · ${d.lowScore} low-confidence word(s) — check the edges` : "";
+    alignStatus(`✓ Aligned ${d.words||0} words across ${state.verses.length} verses${warn}. Nudge any boundary with ← → then U.`, "ok");
+    renderVerses(); render();
+  } catch (e) { alignStatus("Align failed: "+e.message, "err"); }
+  finally { btn.disabled=false; btn.textContent=lab; }
+}
+$("alignBtn").addEventListener("click", autoAlign);
+$("phraseMode").addEventListener("change", (e)=>{ state.phraseMode = e.target.checked; });
 document.querySelectorAll(".controls button").forEach((b)=>b.addEventListener("click",()=>b.blur()));
 function togglePlay() { if (video.paused) video.play(); else video.pause(); }
 $("screen").addEventListener("click",(e)=>{ if (e.target===video) togglePlay(); });
@@ -1252,7 +1292,7 @@ async function save() {
     arabicFont:tstate.arabicFont, englishFont:tstate.englishFont,
     arabicFontSize:tstate.arabicFontSize, englishFontSize:tstate.englishFontSize,
     safeTop:tstate.safeTop, safeRight:tstate.safeRight, safeBottom:tstate.safeBottom, safeLeft:tstate.safeLeft,
-    accent:bstate.color, append:$("append").checked,
+    accent:bstate.color, append:$("append").checked, phraseMode:!!state.phraseMode,
     boundaries:state.boundaries.map((b)=>Math.round(b)), verses:state.verses,
   };
   const btn=$("saveBtn"); const lab=btn.textContent; btn.disabled=true; btn.textContent="Baking…";
@@ -1278,9 +1318,10 @@ async function openSaved(index) {
   const e = savedEntries[index]; if (!e) return;
   $("surah").value=String(e.surahNumber); populateVerseDropdowns(); $("from").value=String(e.fromAyah); $("to").value=String(e.toAyah);
   const start=e.recitationStartMs||0; const verses=e.verses||[];
-  state.verses=verses.map((v)=>({ayahNumber:v.ayahNumber,arabic:v.arabic,translation:v.translation}));
+  state.verses=verses.map((v)=>({ayahNumber:v.ayahNumber,arabic:v.arabic,translation:v.translation,...(Array.isArray(v.phrases)?{phrases:v.phrases}:{})}));
   state.surahName=e.surahName||""; state.boundaries=verses.map((v)=>start+v.fromMs); if(verses.length) state.boundaries.push(start+verses[verses.length-1].toMs);
   state.selected=null; state.loaded=true;
+  state.phraseMode=!!e.phraseMode; $("phraseMode").checked=state.phraseMode;
   $("fadeIn").value=e.fadeInSeconds!=null?e.fadeInSeconds:2; $("fadeOut").value=e.fadeOutSeconds!=null?e.fadeOutSeconds:1;
   $("bgBlur").value=e.bgBlur!=null?e.bgBlur:2.5; $("bgDarken").value=e.bgDarken!=null?(1-e.bgDarken).toFixed(2):0.38;
   $("bgFadeIn").value=e.bgFadeInSeconds!=null?e.bgFadeInSeconds:0.9; $("bgFadeOut").value=e.bgFadeOutSeconds!=null?e.bgFadeOutSeconds:1;

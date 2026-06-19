@@ -12,7 +12,9 @@ import { createReadStream, existsSync } from "node:fs";
 import { join, dirname, extname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { mkdir } from "node:fs/promises";
 import ffmpegPath from "ffmpeg-static";
+import { tokenizeVerses, mapTimings } from "./align/map-words.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -35,6 +37,15 @@ const PROJECTS_DIR = join(DATA_DIR, "projects");
 const INDEX_PATH = join(PROJECTS_DIR, "index.json");
 const PROPS_PATH = join(DATA_DIR, "props.json");
 const CACHE_DIR = join(DATA_DIR, ".cache");
+// Forced-alignment sidecar (isolated Python 3.12 venv — torch has no wheels for
+// the repo's Python 3.14). See scripts/align/requirements.txt for setup.
+const ALIGN_DIR = join(__dirname, "align");
+const ALIGN_PY = join(ALIGN_DIR, "align.py");
+const ALIGN_VENV_PY = join(
+  ALIGN_DIR,
+  ".venv",
+  process.platform === "win32" ? "Scripts/python.exe" : "bin/python"
+);
 const PORT = 4321;
 
 // Pexels API key: env var wins, else a local (never-committed) key file.
@@ -142,6 +153,31 @@ function runFfmpeg(args) {
       code === 0
         ? resolve()
         : reject(new Error(err.trim().split(/\r?\n/).slice(-3).join(" ") || `ffmpeg exited ${code}`))
+    );
+  });
+}
+
+// Run the Python forced-alignment sidecar (in/out are JSON file paths). The
+// venv lives in scripts/align/.venv; a missing venv is a clear setup error.
+function runAlignSidecar(inJson, outJson) {
+  return new Promise((resolve, reject) => {
+    if (!existsSync(ALIGN_VENV_PY)) {
+      return reject(
+        new Error(
+          "alignment Python venv not found — set it up once: see scripts/align/requirements.txt"
+        )
+      );
+    }
+    const proc = spawn(ALIGN_VENV_PY, [ALIGN_PY, "--in", inJson, "--out", outJson], {
+      windowsHide: true,
+    });
+    let err = "";
+    proc.stderr.on("data", (d) => (err += d));
+    proc.on("error", reject);
+    proc.on("close", (code) =>
+      code === 0
+        ? resolve()
+        : reject(new Error(err.trim().split(/\r?\n/).slice(-3).join(" ") || `align exited ${code}`))
     );
   });
 }
@@ -602,6 +638,66 @@ const server = createServer(async (req, res) => {
       return json(res, 200, { file, title: file });
     }
 
+    // Forced-align the known verse text to the recitation audio so the user
+    // doesn't mark boundaries by hand. The user marks only the range start
+    // (startMs) and end (endMs); we align everything in between and also return
+    // per-verse waqf phrases with their own timing (for sentence-by-sentence
+    // display). Boundaries come back absolute (source ms); phrase times are
+    // relative to startMs (== the range start the save path uses as base).
+    if (path === "/api/align" && req.method === "POST") {
+      const body = JSON.parse(await readBody(req));
+      const { recitationFile, verses } = body;
+      const s = Math.max(0, Math.round(+body.startMs || 0));
+      const e = Math.round(+body.endMs || 0);
+      if (!recitationFile || !Array.isArray(verses) || verses.length === 0) {
+        return json(res, 400, { error: "need recitationFile and verses" });
+      }
+      if (!(e > s)) {
+        return json(res, 400, { error: "mark the range start and end first (endMs must be > startMs)" });
+      }
+      const inFile = join(REC_DIR, basename(recitationFile));
+      if (!existsSync(inFile)) {
+        return json(res, 404, { error: `recitation not found: ${basename(recitationFile)}` });
+      }
+      const tok = tokenizeVerses(verses);
+      if (tok.words.length === 0) return json(res, 400, { error: "no alignable words in verses" });
+
+      await mkdir(CACHE_DIR, { recursive: true });
+      const stamp = Date.now();
+      const wav = join(CACHE_DIR, `align_${stamp}.wav`);
+      const inJson = join(CACHE_DIR, `align_${stamp}_in.json`);
+      const outJson = join(CACHE_DIR, `align_${stamp}_out.json`);
+      try {
+        // Extract just the marked window as 16k mono wav.
+        await runFfmpeg([
+          "-hide_banner", "-loglevel", "error",
+          "-ss", (s / 1000).toFixed(3), "-t", ((e - s) / 1000).toFixed(3),
+          "-i", inFile, "-ac", "1", "-ar", "16000", "-y", wav,
+        ]);
+        await writeFile(inJson, JSON.stringify({ audio: wav, words: tok.words, lang: "ara" }), "utf-8");
+        console.log(`  Aligning ${tok.words.length} words over ${((e - s) / 1000).toFixed(1)}s…`);
+        await runAlignSidecar(inJson, outJson);
+        const aligned = JSON.parse(await readFile(outJson, "utf-8"));
+        const mapped = mapTimings(verses, tok, aligned.words);
+
+        const boundaries = [s, ...mapped.interior.map((m) => s + m), e];
+        const outVerses = mapped.verses.map((v) => ({
+          ayahNumber: v.ayahNumber,
+          phrases: v.phrases.map((p) => ({ text: p.text, fromMs: p.startMs, toMs: p.endMs })),
+        }));
+        const lowScore = aligned.words.filter((w) => w.placeholder || w.score < 0.3).length;
+        return json(res, 200, {
+          boundaries,
+          verses: outVerses,
+          diagnostics: { audioMs: aligned.audioMs, words: aligned.words.length, lowScore },
+        });
+      } catch (err) {
+        return json(res, 502, { error: `alignment failed: ${err.message}` });
+      } finally {
+        for (const f of [wav, inJson, outJson]) await unlink(f).catch(() => {});
+      }
+    }
+
     // Search Pexels for vertical 1080p, 60fps+ clips. Returns only videos that
     // carry an exact 1080x1920 file at >=60fps (slow-mo of <60fps looks laggy).
     if (path === "/api/pexels/search" && req.method === "GET") {
@@ -726,7 +822,8 @@ const server = createServer(async (req, res) => {
         safeLeft,
         tailPaddingInSeconds,
         boundaries, // absolute ms in source: length = (toAyah-fromAyah) + 2
-        verses, // [{ayahNumber, arabic, translation}]
+        verses, // [{ayahNumber, arabic, translation, phrases?}]
+        phraseMode, // reveal verses sentence-by-sentence (waqf phrases)
         append,
       } = body;
 
@@ -810,6 +907,18 @@ const server = createServer(async (req, res) => {
           translation: v.translation,
           fromMs: Math.round(boundaries[i] - rangeStart),
           toMs: Math.round(boundaries[i + 1] - rangeStart),
+          // Carry auto-aligned waqf phrases through (already relative to the
+          // range start, == rangeStart). Clamp into the verse window so a phrase
+          // never spills past its ayah's boundaries.
+          ...(Array.isArray(v.phrases) && v.phrases.length
+            ? {
+                phrases: v.phrases.map((p) => ({
+                  text: String(p.text || ""),
+                  fromMs: Math.round(p.fromMs),
+                  toMs: Math.round(p.toMs),
+                })),
+              }
+            : {}),
         })),
         arabicFont: typeof arabicFont === "string" && arabicFont ? arabicFont : "scheherazade",
         englishFont: typeof englishFont === "string" && englishFont ? englishFont : "cormorant",
@@ -846,6 +955,7 @@ const server = createServer(async (req, res) => {
           ? Math.max(0, breathStartDelaySeconds)
           : 0.5,
         hookDurationInSeconds: hookSeconds,
+        phraseMode: Boolean(phraseMode),
         showProgressBar: true,
         showTimerRing: true,
         tailPaddingInSeconds: tail,

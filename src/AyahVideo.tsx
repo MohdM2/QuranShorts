@@ -55,6 +55,20 @@ export const AyahVideo: React.FC<CompositionProps> = (props) => {
     return Math.max(0, Math.min(1, fadeIn * fadeOut));
   };
 
+  // Styling props shared by every AyahText (verse or phrase), so the two render
+  // paths below stay in sync.
+  const textProps = {
+    accent: props.accent,
+    arabicFont: props.arabicFont,
+    englishFont: props.englishFont,
+    arabicFontSize: props.arabicFontSize,
+    englishFontSize: props.englishFontSize,
+    safeTop: props.safeTop,
+    safeRight: props.safeRight,
+    safeBottom: props.safeBottom,
+    safeLeft: props.safeLeft,
+  };
+
   return (
     <div style={{ flex: 1, background: "#000" }}>
       {/* Background lives only after the hook, so the breath plays on pure
@@ -98,7 +112,8 @@ export const AyahVideo: React.FC<CompositionProps> = (props) => {
 
         {verses.map((verse) => {
           const from = msToFrames(verse.fromMs);
-          const duration = msToFrames(verse.toMs - verse.fromMs);
+          const duration = Math.max(1, msToFrames(verse.toMs - verse.fromMs));
+          const usePhrases = Boolean(props.phraseMode && verse.phrases && verse.phrases.length);
           return (
             <Sequence
               key={verse.ayahNumber}
@@ -106,19 +121,31 @@ export const AyahVideo: React.FC<CompositionProps> = (props) => {
               durationInFrames={duration}
               name={`Verse-${verse.ayahNumber}`}
             >
-              <AyahText
-                arabic={verse.arabic}
-                translation={verse.translation}
-                accent={props.accent}
-                arabicFont={props.arabicFont}
-                englishFont={props.englishFont}
-                arabicFontSize={props.arabicFontSize}
-                englishFontSize={props.englishFontSize}
-                safeTop={props.safeTop}
-                safeRight={props.safeRight}
-                safeBottom={props.safeBottom}
-                safeLeft={props.safeLeft}
-              />
+              {usePhrases ? (
+                // One sub-sequence per waqf phrase. Each sentence stays on screen
+                // until the next one begins (so pauses don't blank the frame).
+                verse.phrases!.map((phrase, pi, arr) => {
+                  const startRel = Math.max(0, msToFrames(phrase.fromMs) - from);
+                  const endMs = pi < arr.length - 1 ? arr[pi + 1].fromMs : verse.toMs;
+                  const dur = Math.max(1, msToFrames(endMs) - msToFrames(phrase.fromMs));
+                  return (
+                    <Sequence
+                      key={pi}
+                      from={startRel}
+                      durationInFrames={dur}
+                      name={`Verse-${verse.ayahNumber}-P${pi + 1}`}
+                    >
+                      <AyahText arabic={phrase.text} translation="" {...textProps} />
+                    </Sequence>
+                  );
+                })
+              ) : (
+                <AyahText
+                  arabic={verse.arabic}
+                  translation={verse.translation}
+                  {...textProps}
+                />
+              )}
             </Sequence>
           );
         })}

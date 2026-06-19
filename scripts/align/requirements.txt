@@ -1,0 +1,12 @@
+# Forced-alignment sidecar deps. Install into an isolated Python 3.12 venv —
+# torch has no wheels for the repo's Python 3.14. With uv:
+#
+#   cd scripts/align
+#   uv venv --python 3.12 .venv
+#   uv pip install --python .venv torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+#   uv pip install --python .venv -r requirements.txt
+#
+# torch/torchaudio are installed separately from the CPU index above.
+uroman
+soundfile
+numpy

@@ -5,6 +5,14 @@ build/
 .cache/
 *.log
 
+# Python alignment sidecar: virtualenv + caches (deps are heavy, recreated locally)
+.venv/
+__pycache__/
+*.pyc
+# Alignment self-test scratch files (regenerated locally)
+scripts/align/_test_*.json
+scripts/align/_align_*.json
+
 # Local media assets — large, regenerated/downloaded, kept out of git.
 # (backgrounds, baked renders, downloaded recitations, breath audio, etc.)
 public/media/

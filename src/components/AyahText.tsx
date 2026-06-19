@@ -83,6 +83,7 @@ export const AyahText: React.FC<Props> = ({
   const padTop = safeTop ?? SAFE_AREA.top;
   const padBottom = safeBottom ?? SAFE_AREA.bottom;
   const padX = Math.max(safeLeft ?? SAFE_AREA.left, safeRight ?? SAFE_AREA.right);
+  const hasTranslation = Boolean(translation && translation.trim());
 
   return (
     <div
@@ -108,40 +109,46 @@ export const AyahText: React.FC<Props> = ({
           direction: "rtl",
           textAlign: "center",
           lineHeight: 1.85,
-          marginBottom: 44,
+          marginBottom: hasTranslation ? 44 : 0,
           textShadow: `0 2px 20px rgba(0,0,0,0.5)`,
         }}
       >
         {arabic}
       </div>
 
-      {/* Animated divider */}
-      <div
-        style={{
-          width: dividerWidth,
-          height: 1.5,
-          background: `linear-gradient(to right, transparent, ${accent}, transparent)`,
-          marginBottom: 36,
-          opacity: fadeOut,
-        }}
-      />
+      {/* Divider + translation are hidden when there's no translation — e.g.
+          phrase mode shows Arabic sentences alone (no per-phrase translation). */}
+      {hasTranslation && (
+        <>
+          {/* Animated divider */}
+          <div
+            style={{
+              width: dividerWidth,
+              height: 1.5,
+              background: `linear-gradient(to right, transparent, ${accent}, transparent)`,
+              marginBottom: 36,
+              opacity: fadeOut,
+            }}
+          />
 
-      {/* Translation */}
-      <div
-        style={{
-          fontFamily: latinFamily,
-          fontSize: latinSize,
-          fontWeight: 300,
-          color: theme.textMuted,
-          textAlign: "center",
-          lineHeight: 1.7,
-          maxWidth: 780,
-          opacity: translationFade * fadeOut,
-          letterSpacing: "0.01em",
-        }}
-      >
-        {translation}
-      </div>
+          {/* Translation */}
+          <div
+            style={{
+              fontFamily: latinFamily,
+              fontSize: latinSize,
+              fontWeight: 300,
+              color: theme.textMuted,
+              textAlign: "center",
+              lineHeight: 1.7,
+              maxWidth: 780,
+              opacity: translationFade * fadeOut,
+              letterSpacing: "0.01em",
+            }}
+          >
+            {translation}
+          </div>
+        </>
+      )}
     </div>
   );
 };

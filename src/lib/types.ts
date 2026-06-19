@@ -6,6 +6,17 @@ export type VerseTiming = {
   translation: string;
   fromMs: number;
   toMs: number;
+  // Optional sub-verse phrases, split at the Quran's waqf (pause) marks, each
+  // with its own timing (same recitationStartMs-relative base as fromMs/toMs).
+  // Produced by the forced-alignment feature; when present and phrase mode is
+  // on, AyahText reveals these one at a time instead of the whole ayah at once.
+  phrases?: VersePhrase[];
+};
+
+export type VersePhrase = {
+  text: string; // Arabic words of this phrase (joined)
+  fromMs: number;
+  toMs: number;
 };
 
 // One video = a continuous range of verses from a single surah, played from one
@@ -86,6 +97,9 @@ export type VideoProps = {
   // TikTok draw their own seek bar across the bottom, so ours was redundant and
   // buried under the caption. Kept for back-compat with saved data; ignored at
   // render. Progress is now shown by the timer ring only (showTimerRing).
+  // When true (and verses carry aligned phrases), reveal each verse one waqf
+  // phrase ("sentence") at a time instead of the whole ayah at once.
+  phraseMode?: boolean;
   showProgressBar: boolean;
   showTimerRing: boolean;
   // Platform safe-area insets (px on the 1080×1920 canvas) kept clear of the
